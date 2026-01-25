@@ -13,13 +13,22 @@ const routes: RouteRecordRaw[] = [
     path: '/rule',
     children: [
       {
-        name: 'Manage',
-        path: 'manage',
+        name: 'Package',
+        path: 'package',
         component: () => import('#/views/rule/package/index.vue'),
         meta: {
           affixTab: true,
           icon: 'lucide:area-chart',
           title: $t('rule.manage.maintain'),
+        },
+      },
+      {
+        name: 'Manage',
+        path: 'manage',
+        component: () => import('#/views/rule/manage/index.vue'),
+        meta: {
+          hideInMenu: true,
+          title: '规则维护',
         },
       },
     ],
