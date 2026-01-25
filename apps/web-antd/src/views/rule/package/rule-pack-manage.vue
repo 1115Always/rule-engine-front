@@ -2,8 +2,8 @@
 import { ref } from 'vue';
 
 import AddRulePackage from './add-rule-package.vue';
-import RuleManageCard from './rule-manage-card.vue';
-import RuleManageHeader from './rule-manage-header.vue';
+import RulePackManageCard from './rule-pack-manage-card.vue';
+import RulePackManageHeader from './rule-pack-manage-header.vue';
 
 interface RulePackage {
   createTime?: string;
@@ -53,9 +53,9 @@ const onSubmit = (data: any) => {
 
 <template>
   <div class="p-4">
-    <RuleManageHeader @add="onAdd" />
+    <RulePackManageHeader @add="onAdd" />
 
-    <RuleManageCard :list="rulePackages" />
+    <RulePackManageCard :list="rulePackages" />
 
     <AddRulePackage ref="addRulePackageRef" @submit="onSubmit" />
   </div>

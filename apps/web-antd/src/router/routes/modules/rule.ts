@@ -14,8 +14,8 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         name: 'Manage',
-        path: '/manage',
-        component: () => import('#/views/rule/manage/index.vue'),
+        path: 'manage',
+        component: () => import('#/views/rule/package/index.vue'),
         meta: {
           affixTab: true,
           icon: 'lucide:area-chart',
