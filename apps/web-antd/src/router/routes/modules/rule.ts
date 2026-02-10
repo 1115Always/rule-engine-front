@@ -19,7 +19,7 @@ const routes: RouteRecordRaw[] = [
         meta: {
           affixTab: true,
           icon: 'lucide:area-chart',
-          title: $t('rule.manage.maintain'),
+          title: '规则包维护',
         },
       },
       {

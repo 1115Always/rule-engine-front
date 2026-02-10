@@ -1,9 +1,28 @@
 <script setup lang="ts">
 import { IconifyIcon } from '@vben/icons';
+import { useRouter } from 'vue-router';
 
 import { Card, Space, Tag, Tooltip } from 'ant-design-vue';
 
+const router = useRouter();
+
 defineProps<{ list: any[] }>();
+
+const handleCardClick = (item: any) => {
+  router.push({
+    path: '/rule/manage',
+    query: {
+      packageId: item.id,
+      packageName: item.name,
+    },
+  });
+};
+
+const handleActionClick = (event: MouseEvent, action: string, item: any) => {
+  event.stopPropagation();
+  // TODO: 根据action类型执行相应操作
+  console.log(action, item);
+};
 </script>
 
 <template>
@@ -14,6 +33,7 @@ defineProps<{ list: any[] }>();
       :hoverable="true"
       class="cursor-pointer"
       style="max-width: 280px"
+      @click="handleCardClick(item)"
     >
       <div class="space-y-3">
         <div class="flex items-center justify-between">
@@ -52,29 +72,33 @@ defineProps<{ list: any[] }>();
       </div>
 
       <template #actions>
-        <div class="flex items-center justify-around px-2">
+        <div class="flex items-center justify-around px-2" @click.stop>
           <Tooltip title="查看">
             <IconifyIcon
               icon="ant-design:eye-outlined"
               class="cursor-pointer text-lg hover:text-blue-500"
+              @click="(e) => handleActionClick(e, 'view', item)"
             />
           </Tooltip>
           <Tooltip title="编辑">
             <IconifyIcon
               icon="ant-design:edit-outlined"
               class="cursor-pointer text-lg hover:text-blue-500"
+              @click="(e) => handleActionClick(e, 'edit', item)"
             />
           </Tooltip>
           <Tooltip title="删除">
             <IconifyIcon
               icon="ant-design:delete-outlined"
               class="cursor-pointer text-lg hover:text-red-500"
+              @click="(e) => handleActionClick(e, 'delete', item)"
             />
           </Tooltip>
           <Tooltip title="导出">
             <IconifyIcon
               icon="ant-design:export-outlined"
               class="cursor-pointer text-lg hover:text-blue-500"
+              @click="(e) => handleActionClick(e, 'export', item)"
             />
           </Tooltip>
         </div>
