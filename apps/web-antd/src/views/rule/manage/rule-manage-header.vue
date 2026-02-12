@@ -20,7 +20,13 @@ const handleBack = () => {
 };
 
 const handleAddRule = () => {
-  // TODO: 打开添加规则弹窗
+  router.push({
+    name: 'CreateRule',
+    query: {
+      packageId: packageInfo.value.id,
+      packageName: packageInfo.value.name,
+    },
+  });
 };
 </script>
 
