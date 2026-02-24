@@ -257,18 +257,17 @@ const handleSave = async () => {
                 style="width: 200px"
               />
             </div>
-            <a-button
-              type="text"
+            <Button
               danger
               @click="removeCondition(index)"
               v-if="conditions.length > 1"
             >
               删除
-            </a-button>
+            </Button>
           </div>
 
           <div class="grid grid-cols-4 gap-4">
-            <div>
+            <div class="flex flex-col">
               <div class="mb-1 text-sm text-gray-600">条件类型</div>
               <Select
                 v-model:value="condition.conditionType"
@@ -276,14 +275,14 @@ const handleSave = async () => {
                 style="width: 100%"
               />
             </div>
-            <div>
+            <div class="flex flex-col">
               <div class="mb-1 text-sm text-gray-600">字段名</div>
-              <a-input
+              <Input
                 v-model:value="condition.fieldName"
                 placeholder="请输入字段名"
               />
             </div>
-            <div>
+            <div class="flex flex-col">
               <div class="mb-1 text-sm text-gray-600">操作符</div>
               <Select
                 v-model:value="condition.operator"
@@ -291,9 +290,9 @@ const handleSave = async () => {
                 style="width: 100%"
               />
             </div>
-            <div>
+            <div class="flex flex-col">
               <div class="mb-1 text-sm text-gray-600">条件值</div>
-              <a-input
+              <Input
                 v-model:value="condition.conditionValue"
                 placeholder="请输入条件值"
               />
@@ -302,7 +301,7 @@ const handleSave = async () => {
 
           <div v-if="condition.conditionType === 'EVAL'" class="mt-4">
             <div class="mb-1 text-sm text-gray-600">表达式</div>
-            <a-input
+            <Input
               v-model:value="condition.expression"
               placeholder="请输入表达式"
             />
