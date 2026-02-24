@@ -1,13 +1,11 @@
 import type { RouteRecordRaw } from 'vue-router';
 
-import { $t } from '#/locales';
-
 const routes: RouteRecordRaw[] = [
   {
     meta: {
       icon: 'lucide:layout-dashboard',
       order: -1,
-      title: $t('rule.manage.title'),
+      title: '规则管理',
     },
     name: 'Rule',
     path: '/rule',
