@@ -2,7 +2,7 @@
 import { reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import { message } from 'ant-design-vue';
+import { Button, Input, message, Select } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
 
@@ -30,6 +30,7 @@ const formModel = reactive({
 interface ConditionItem {
   id: string;
   conditionKey: string;
+  conditionName: string;
   conditionType: 'EVAL' | 'EXACT' | 'RANGE';
   fieldName: string;
   operator: string;
@@ -128,6 +129,7 @@ const addCondition = () => {
   const newCondition: ConditionItem = {
     id: Date.now().toString(),
     conditionKey: `c${conditions.value.length + 1}`,
+    conditionName: '',
     conditionType: 'EXACT',
     fieldName: '',
     operator: '=',
@@ -171,6 +173,7 @@ const handleSave = async () => {
       rulePackageId: Number.parseInt(packageInfo.id),
       conditions: conditions.value.map((item) => ({
         conditionKey: item.conditionKey,
+        conditionName: item.conditionName,
         conditionType: item.conditionType,
         fieldName: item.fieldName,
         operator: item.operator,
@@ -207,7 +210,7 @@ const handleSave = async () => {
   <div class="p-4">
     <!-- 返回按钮 -->
     <div class="mb-4">
-      <a-button @click="handleBack"> ← 返回 </a-button>
+      <Button @click="handleBack" type="primary">返回</Button>
     </div>
 
     <!-- 页面标题 -->
@@ -227,9 +230,7 @@ const handleSave = async () => {
     <!-- 规则条件 -->
     <a-card title="规则条件" class="mb-6">
       <div class="mb-4">
-        <a-button type="dashed" @click="addCondition" block>
-          + 添加条件
-        </a-button>
+        <Button type="primary" @click="addCondition" block> + 添加条件 </Button>
       </div>
 
       <div
@@ -247,10 +248,14 @@ const handleSave = async () => {
         >
           <div class="mb-3 flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <span class="font-medium">条件 {{ index + 1 }}</span>
               <span class="text-sm text-gray-500">{{
                 condition.conditionKey
               }}</span>
+              <Input
+                v-model:value="condition.conditionName"
+                placeholder="请输入条件名称"
+                style="width: 200px"
+              />
             </div>
             <a-button
               type="text"
@@ -262,10 +267,10 @@ const handleSave = async () => {
             </a-button>
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-4 gap-4">
             <div>
               <div class="mb-1 text-sm text-gray-600">条件类型</div>
-              <a-select
+              <Select
                 v-model:value="condition.conditionType"
                 :options="conditionTypeOptions"
                 style="width: 100%"
@@ -278,12 +283,9 @@ const handleSave = async () => {
                 placeholder="请输入字段名"
               />
             </div>
-          </div>
-
-          <div class="mt-4 grid grid-cols-2 gap-4">
             <div>
               <div class="mb-1 text-sm text-gray-600">操作符</div>
-              <a-select
+              <Select
                 v-model:value="condition.operator"
                 :options="operatorOptions"
                 style="width: 100%"
@@ -311,8 +313,8 @@ const handleSave = async () => {
 
     <!-- 操作按钮 -->
     <div class="flex justify-end gap-3">
-      <a-button @click="handleBack">取消</a-button>
-      <a-button type="primary" @click="handleSave">保存规则</a-button>
+      <Button @click="handleBack">取消</Button>
+      <Button type="primary" @click="handleSave">保存规则</Button>
     </div>
   </div>
 </template>
