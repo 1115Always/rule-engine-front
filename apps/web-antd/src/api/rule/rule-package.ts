@@ -31,10 +31,35 @@ interface RulePackageResponse {
 
 /**
  * 分页查询规则包列表
+ * @param params 查询参数
+ * @param params.page 页码，默认1
+ * @param params.pageSize每页条数，默认20
+ * @param params.packageName规则包名（模糊匹配）
+ * @param params.scene场景名称
  */
-export async function getRulePackagesApi(): Promise<RulePackage[]> {
+export async function getRulePackagesApi(params?: {
+  page?: number;
+  pageSize?: number;
+  packageName?: string;
+  scene?: string;
+}): Promise<RulePackage[]> {
+  const { page = 1, pageSize = 20, packageName, scene } = params || {};
+
+  //构建查询参数
+  const queryParams = new URLSearchParams();
+  queryParams.append("page", page.toString());
+  queryParams.append("pageSize", pageSize.toString());
+
+  if (packageName) {
+    queryParams.append("packageName", packageName);
+  }
+
+  if (scene) {
+    queryParams.append("scene", scene);
+  }
+
   const response = await requestClient.get<RulePackageResponse>(
-    "/rulePackage/page?page=1&pageSize=20"
+    `/rulePackage/page?${queryParams.toString()}`
   );
 
   return response.records.map((record) => ({
