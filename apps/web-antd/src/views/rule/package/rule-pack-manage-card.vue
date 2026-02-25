@@ -1,20 +1,37 @@
 <script setup lang="ts">
-import { IconifyIcon } from '@vben/icons';
-import { useRouter } from 'vue-router';
+import { IconifyIcon } from "@vben/icons";
+import { useRouter } from "vue-router";
 
-import { Card, Space, Tag, Tooltip } from 'ant-design-vue';
+import { Card, Space, Tag, Tooltip } from "ant-design-vue";
 
 const router = useRouter();
 
 defineProps<{ list: any[] }>();
 
+const MAX_DISPLAY_SCENES = 2; // 最多显示的场景数量
+
+const getDisplayScenes = (scenes: string[]) => {
+  if (!scenes || scenes.length <= MAX_DISPLAY_SCENES) {
+    return scenes;
+  }
+  return scenes.slice(0, MAX_DISPLAY_SCENES);
+};
+
+const getRemainingScenes = (scenes: string[]) => {
+  if (!scenes || scenes.length <= MAX_DISPLAY_SCENES) {
+    return [];
+  }
+  return scenes.slice(MAX_DISPLAY_SCENES);
+};
+
+
 const handleCardClick = (item: any) => {
   router.push({
-    path: '/rule/manage',
+    path: "/rule/manage",
     query: {
       packageId: item.id,
-      packageName: item.name,
-    },
+      packageName: item.name
+    }
   });
 };
 
@@ -42,10 +59,14 @@ const handleActionClick = (event: MouseEvent, action: string, item: any) => {
 
         <div>
           <div class="mb-1 text-xs text-gray-500">规则场景</div>
-          <Space :size="4" wrap>
-            <Tag v-for="scene in item.scenes" :key="scene" color="blue">
-              {{ scene }}
-            </Tag>
+          <Space :size="4">
+            <Tooltip v-for="scene in getDisplayScenes(item.scenes)" :key="scene" :title="scene">
+              <Tag color="blue">{{ scene }}</Tag>
+            </Tooltip>
+            <Tooltip v-if="getRemainingScenes(item.scenes).length > 0"
+                     :title="getRemainingScenes(item.scenes).join(', ')">
+              <Tag color="blue">+{{ getRemainingScenes(item.scenes).length }}</Tag>
+            </Tooltip>
           </Space>
         </div>
 
@@ -60,14 +81,14 @@ const handleActionClick = (event: MouseEvent, action: string, item: any) => {
               :color="item.status === 'active' ? 'green' : 'default'"
               size="small"
             >
-              {{ item.status === 'active' ? '启用' : '禁用' }}
+              {{ item.status === "active" ? "启用" : "禁用" }}
             </Tag>
           </div>
         </div>
 
         <div class="text-xs text-gray-400">
-          <div>创建时间：{{ item.createTime || '2024-01-01' }}</div>
-          <div>更新时间：{{ item.updateTime || '2024-01-01' }}</div>
+          <div>创建时间：{{ item.createTime || "2024-01-01" }}</div>
+          <div>更新时间：{{ item.updateTime || "2024-01-01" }}</div>
         </div>
       </div>
 
