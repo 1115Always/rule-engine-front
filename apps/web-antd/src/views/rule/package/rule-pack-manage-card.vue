@@ -30,7 +30,8 @@ const handleCardClick = (item: any) => {
     path: "/rule/manage",
     query: {
       packageId: item.id,
-      packageName: item.name
+      packageName: item.name,
+      scenes: JSON.stringify(item.scenes || [])
     }
   });
 };

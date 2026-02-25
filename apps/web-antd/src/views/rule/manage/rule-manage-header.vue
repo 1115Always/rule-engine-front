@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { IconifyIcon } from '@vben/icons';
 
-import { Button, Card, Space } from 'ant-design-vue';
+import { Button, Card, Space, Tag } from 'ant-design-vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -13,7 +13,35 @@ const router = useRouter();
 const packageInfo = computed(() => ({
   id: route.query.packageId as string,
   name: route.query.packageName as string,
+  scenes: JSON.parse((route.query.scenes as string) || '[]'),
 }));
+
+//场显示相关
+const MAX_SCENE_LENGTH = 100; // 最大显示长度
+const MAX_SCENE_COUNT = 3;   // 最多显示场景数
+
+const displayScenes = computed(() => {
+  const scenes = packageInfo.value.scenes || [];
+  return scenes.slice(0, MAX_SCENE_COUNT);
+});
+
+const hasMoreScenes = computed(() => {
+  const scenes = packageInfo.value.scenes || [];
+  return scenes.length > MAX_SCENE_COUNT;
+});
+
+const remainingScenesCount = computed(() => {
+  const scenes = packageInfo.value.scenes || [];
+  return scenes.length - MAX_SCENE_COUNT;
+});
+
+const getScenesDisplayText = () => {
+  const scenes = displayScenes.value;
+  const text = scenes.join('、');
+  return text.length > MAX_SCENE_LENGTH 
+    ? text.substring(0, MAX_SCENE_LENGTH) + '...' 
+    : text;
+};
 
 const handleBack = () => {
   router.back();
@@ -33,14 +61,37 @@ const handleAddRule = () => {
 <template>
   <Card>
     <div class="flex items-center justify-between">
-      <div class="flex items-center gap-4">
-        <Button @click="handleBack">返回</Button>
+      <div class="flex items-center gap-6">
         <div>
           <h2 class="text-xl font-semibold">
             {{ packageInfo.name || '规则包' }}
           </h2>
-          <div class="mt-1 text-sm text-gray-500">
-            规则包ID: {{ packageInfo.id || '-' }}
+        </div>
+        
+        <div class="flex items-center gap-4 text-sm">
+          <div class="text-gray-500">
+           规则包ID: <span class="font-medium text-gray-800">{{ packageInfo.id || '-' }}</span>
+          </div>
+          
+          <div v-if="displayScenes.length > 0" class="flex items-center gap-2">
+            <span class="text-gray-500">规则场景:</span>
+            <div class="flex flex-wrap gap-1 max-w-xs">
+              <Tag 
+                v-for="scene in displayScenes" 
+                :key="scene" 
+                color="blue" 
+                class="text-xs"
+              >
+                {{ scene }}
+              </Tag>
+              <Tag 
+                v-if="hasMoreScenes" 
+                color="blue" 
+                class="text-xs"
+              >
+                +{{ remainingScenesCount }}
+              </Tag>
+            </div>
           </div>
         </div>
       </div>
@@ -50,6 +101,7 @@ const handleAddRule = () => {
           <IconifyIcon icon="ant-design:plus-outlined" />
           新建规则
         </Button>
+        <Button @click="handleBack">返回</Button>
       </Space>
     </div>
   </Card>
