@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
 
 import { IconifyIcon } from '@vben/icons';
 
@@ -13,25 +14,41 @@ import {
   Tag,
 } from 'ant-design-vue';
 
-// 表格列定义
+import { deleteRuleApi, getRulesApi } from "#/api/rule/rule";
+
+const route = useRoute();
+
+// 从路由参数获取规则包信息
+const packageInfo = computed(() => ({
+  id: route.query.packageId as string,
+  name: route.query.packageName as string,
+}));
+
+//表格列定义
 const columns = [
   {
+    title: '规则ID',
+    dataIndex: 'ruleId',
+    key: 'ruleId',
+    width: 150,
+  },
+  {
     title: '规则名称',
-    dataIndex: 'name',
-    key: 'name',
+    dataIndex: 'ruleName',
+    key: 'ruleName',
     width: 200,
   },
   {
-    title: '规则类型',
-    dataIndex: 'type',
-    key: 'type',
-    width: 120,
+    title: '规则包',
+    dataIndex: 'packageName',
+    key: 'packageName',
+    width: 150,
   },
   {
-    title: '优先级',
-    dataIndex: 'priority',
-    key: 'priority',
-    width: 100,
+    title: '动作类型',
+    dataIndex: 'actionType',
+    key: 'actionType',
+    width: 120,
   },
   {
     title: '状态',
@@ -48,15 +65,15 @@ const columns = [
   },
   {
     title: '创建时间',
-    dataIndex: 'createTime',
-    key: 'createTime',
-    width: 180,
+    dataIndex: 'createdAt',
+    key: 'createdAt',
+    width: 144,
   },
   {
     title: '更新时间',
-    dataIndex: 'updateTime',
-    key: 'updateTime',
-    width: 180,
+    dataIndex: 'updatedAt',
+    key: 'updatedAt',
+    width: 144,
   },
   {
     title: '操作',
@@ -65,45 +82,15 @@ const columns = [
   },
 ];
 
-// 模拟数据
-const dataSource = ref([
-  {
-    id: '1',
-    name: '规则1',
-    type: '过滤规则',
-    priority: 1,
-    status: 'active',
-    description: '这是一个过滤规则的描述信息',
-    createTime: '2024-01-01 10:00:00',
-    updateTime: '2024-01-15 14:30:00',
-  },
-  {
-    id: '2',
-    name: '规则2',
-    type: '计算规则',
-    priority: 2,
-    status: 'inactive',
-    description: '这是一个计算规则的描述信息',
-    createTime: '2024-01-02 11:00:00',
-    updateTime: '2024-01-16 15:30:00',
-  },
-  {
-    id: '3',
-    name: '规则3',
-    type: '校验规则',
-    priority: 3,
-    status: 'active',
-    description: '这是一个校验规则的描述信息',
-    createTime: '2024-01-03 12:00:00',
-    updateTime: '2024-01-17 16:30:00',
-  },
-]);
+// 数据源
+const dataSource = ref<any[]>([]);
+const ruleListResponse = ref<any>(null);
 
 // 分页配置
 const pagination = ref({
   current: 1,
-  pageSize: 10,
-  total: 3,
+  pageSize: 20,
+  total: 0,
   showSizeChanger: true,
   showQuickJumper: true,
   showTotal: (total: number) => `共 ${total} 条`,
@@ -120,12 +107,26 @@ const handleTableChange = (pag: any) => {
 };
 
 // 加载数据
-const loadData = () => {
+const loadData = async () => {
   loading.value = true;
-  // TODO: 调用API获取数据
-  setTimeout(() => {
+  try {
+    const response = await getRulesApi({
+      page: pagination.value.current,
+      pageSize: pagination.value.pageSize,
+      packageName: packageInfo.value.name
+    });
+
+    ruleListResponse.value = response;
+    dataSource.value = response.records;
+    pagination.value.total = response.total;
+    pagination.value.current = response.current;
+    pagination.value.pageSize = response.size;
+  } catch (error) {
+    console.error('获取规则列表失败:', error);
+    message.error('获取规则列表失败');
+  } finally {
     loading.value = false;
-  }, 500);
+  }
 };
 
 // 查看规则
@@ -144,10 +145,17 @@ const handleEdit = (record: any) => {
 const handleDelete = (record: any) => {
   Modal.confirm({
     title: '确认删除',
-    content: `确定要删除规则"${record.name}"吗？`,
-    onOk() {
-      // TODO: 调用删除API
-      message.success('删除成功');
+    content: `确定要删除规则"${record.ruleName}"吗？`,
+    onOk: async () => {
+      try {
+        await deleteRuleApi(record.id);
+        message.success('删除成功');
+        // 删除成功后刷新列表
+        loadData();
+      } catch (error) {
+        console.error('删除规则失败:', error);
+        message.error('删除规则失败');
+      }
     },
   });
 };
@@ -161,6 +169,17 @@ const getStatusColor = (status: string) => {
 const getStatusText = (status: string) => {
   return status === 'active' ? '启用' : '禁用';
 };
+
+// 格式化日期时间
+const formatDateTime = (dateTimeStr: string) => {
+  if (!dateTimeStr) return '-';
+  return dateTimeStr.replace('T', ' ');
+};
+
+//组件挂载时加载数据
+onMounted(() => {
+  loadData();
+});
 </script>
 
 <template>
@@ -178,6 +197,12 @@ const getStatusText = (status: string) => {
           <Tag :color="getStatusColor(record.status)">
             {{ getStatusText(record.status) }}
           </Tag>
+        </template>
+        <template v-else-if="column.key === 'createdAt'">
+          {{ formatDateTime(record.createdAt) }}
+        </template>
+        <template v-else-if="column.key === 'updatedAt'">
+          {{ formatDateTime(record.updatedAt) }}
         </template>
         <template v-else-if="column.key === 'action'">
           <Space>
