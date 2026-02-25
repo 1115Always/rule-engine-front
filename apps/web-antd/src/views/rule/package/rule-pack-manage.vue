@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
+
+import { getRulePackagesApi } from '#/api/rule/rule-package';
 
 import AddRulePackage from './add-rule-package.vue';
 import RulePackManageCard from './rule-pack-manage-card.vue';
@@ -16,27 +18,19 @@ interface RulePackage {
 }
 
 const addRulePackageRef = ref();
+const rulePackages = ref<RulePackage[]>([]);
 
-const rulePackages = ref<RulePackage[]>([
-  {
-    id: 1,
-    name: '转账风控规则',
-    scenes: ['单笔转账'],
-    ruleCount: 12,
-    status: 'active',
-    createTime: '2024-01-15',
-    updateTime: '2024-01-20',
-  },
-  {
-    id: 2,
-    name: '批量转账校验',
-    scenes: ['批量转账'],
-    ruleCount: 8,
-    status: 'active',
-    createTime: '2024-01-10',
-    updateTime: '2024-01-18',
-  },
-]);
+const fetchRulePackages = async () => {
+  try {
+    rulePackages.value = await getRulePackagesApi();
+  } catch (error) {
+    console.error('Error fetching rule packages:', error);
+  }
+};
+
+onMounted(() => {
+  fetchRulePackages();
+});
 
 const onAdd = () => {
   addRulePackageRef.value?.open();
