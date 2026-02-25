@@ -39,21 +39,24 @@ interface ConditionItem {
   sortOrder: number;
 }
 
-// 条件类型选项
-const conditionTypeOptions = [
-  { label: '精确匹配', value: 'EXACT' },
-  { label: '范围匹配', value: 'RANGE' },
-  { label: '表达式求值', value: 'EVAL' },
+// 字段选项
+const fieldOptions = [
+  { label: '用户ID', value: '1' },
+  { label: '用户名', value: '2' },
+  { label: '年龄', value: '3' },
+  { label: '性别', value: '4' },
+  { label: '部门', value: '5' },
+  { label: '职位', value: '6' },
 ];
 
 // 操作符选项
 const operatorOptions = [
-  { label: '=', value: '=' },
-  { label: '!=', value: '!=' },
-  { label: '>', value: '>' },
-  { label: '<', value: '<' },
-  { label: '>=', value: '>=' },
-  { label: '<=', value: '<=' },
+  { label: '等于', value: '=' },
+  { label: '不等于', value: '!=' },
+  { label: '大于', value: '>' },
+  { label: '小于', value: '<' },
+  { label: '大于等于', value: '>=' },
+  { label: '小于等于', value: '<=' },
 ];
 
 // 表单配置
@@ -246,40 +249,22 @@ const handleSave = async () => {
           :key="condition.id"
           class="mb-4 rounded-lg border p-4"
         >
-          <div class="mb-3 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <span class="text-sm text-gray-500">{{
-                condition.conditionKey
-              }}</span>
+          <!-- 修改外层 grid 布局，从均分4列改为自定义列宽 -->
+          <div class="mb-4 grid grid-cols-[1.2fr_1fr_0.3fr_1.5fr_0.2fr] gap-4">
+            <div class="flex flex-col">
+              <div class="mb-1 text-sm text-gray-600">
+                {{ `条件${condition.conditionKey}` }}
+              </div>
               <Input
                 v-model:value="condition.conditionName"
                 placeholder="请输入条件名称"
-                style="width: 200px"
               />
             </div>
-            <Button
-              danger
-              @click="removeCondition(index)"
-              v-if="conditions.length > 1"
-            >
-              删除
-            </Button>
-          </div>
-
-          <div class="grid grid-cols-4 gap-4">
             <div class="flex flex-col">
-              <div class="mb-1 text-sm text-gray-600">条件类型</div>
+              <div class="mb-1 text-sm text-gray-600">字段</div>
               <Select
-                v-model:value="condition.conditionType"
-                :options="conditionTypeOptions"
-                style="width: 100%"
-              />
-            </div>
-            <div class="flex flex-col">
-              <div class="mb-1 text-sm text-gray-600">字段名</div>
-              <Input
                 v-model:value="condition.fieldName"
-                placeholder="请输入字段名"
+                :options="fieldOptions"
               />
             </div>
             <div class="flex flex-col">
@@ -287,7 +272,6 @@ const handleSave = async () => {
               <Select
                 v-model:value="condition.operator"
                 :options="operatorOptions"
-                style="width: 100%"
               />
             </div>
             <div class="flex flex-col">
@@ -296,6 +280,10 @@ const handleSave = async () => {
                 v-model:value="condition.conditionValue"
                 placeholder="请输入条件值"
               />
+            </div>
+            <div class="flex flex-col">
+              <div class="mb-1 text-sm text-gray-600">操作</div>
+              <Button danger @click="removeCondition(index)"> 删除 </Button>
             </div>
           </div>
 
