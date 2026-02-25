@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue';
 
 import { getRulePackagesApi } from '#/api/rule/rule-package';
-import { getSceneListApi } from '#/api/rule/scene';
+import { getSceneOptionsApi } from '#/api/rule/scene';
 
 import AddRulePackage from './add-rule-package.vue';
 import RulePackManageCard from './rule-pack-manage-card.vue';
@@ -33,11 +33,7 @@ const fetchRulePackages = async (params?: { packageName?: string; scene?: string
 //获取场景列表
 const fetchSceneList = async () => {
   try {
-    const scenes = await getSceneListApi();
-    sceneOptions.value = scenes.map(scene => ({
-      label: scene.sceneName,
-      value: scene.sceneCode
-    }));
+    sceneOptions.value = await getSceneOptionsApi();
   } catch (error) {
     console.error('获取场景列表失败:', error);
   }
@@ -60,12 +56,9 @@ const onSearch = (data: { name?: string; scenes?: string }) => {
   });
 };
 
-const onSubmit = (data: any) => {
-  rulePackages.value.push({
-    id: Date.now(),
-    name: data.name,
-    scenes: data.scenes,
-  });
+const onCreateSuccess = () => {
+  // 创建成功后刷新规则包列表
+  fetchRulePackages({});
 };
 </script>
 
@@ -79,6 +72,6 @@ const onSubmit = (data: any) => {
 
     <RulePackManageCard :list="rulePackages" />
 
-    <AddRulePackage ref="addRulePackageRef" @submit="onSubmit" />
+    <AddRulePackage ref="addRulePackageRef" @success="onCreateSuccess" />
   </div>
 </template>

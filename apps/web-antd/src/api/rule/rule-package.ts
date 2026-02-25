@@ -72,3 +72,34 @@ export async function getRulePackagesApi(params?: {
     updateTime: record.updatedAt
   }));
 }
+
+interface CreateRulePackageRequest {
+  packageCode: string;
+  packageName: string;
+  description?: string;
+  status?: "ACTIVE" | "INACTIVE";
+  version?: number;
+  scenes?: string[];
+}
+
+interface RulePackageCreateResponse {
+  id: number;
+  packageCode: string;
+  packageName: string;
+  description: string;
+  status: string;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * 创建规则包
+ * @param data 创建规则包的数据
+ */
+export async function createRulePackageApi(data: CreateRulePackageRequest): Promise<RulePackageCreateResponse> {
+  return await requestClient.post<RulePackageCreateResponse>(
+    "/rulePackage/create",
+    data
+  );
+}
