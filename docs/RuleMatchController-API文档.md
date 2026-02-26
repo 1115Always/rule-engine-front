@@ -58,13 +58,13 @@ Content-Type: application/json
   "message": "success",
   "matchedRules": [
     {
-      "ruleId": "RULE_001",
+      "ruleId": 1,
       "ruleName": "北京成年VIP用户",
       "actionType": "PRINT",
       "actionParam": "{\"message\":\"匹配规则1\"}"
     },
     {
-      "ruleId": "RULE_002",
+      "ruleId": 2,
       "ruleName": "年轻用户优惠",
       "actionType": "DISCOUNT",
       "actionParam": "{\"rate\":0.8}"
@@ -199,7 +199,7 @@ GET /api/rule/health
 
 | 字段名 | 类型 | 说明 |
 |--------|------|------|
-| ruleId | String | 规则ID |
+| ruleId | Long | 规则ID |
 | ruleName | String | 规则名称 |
 | actionType | String | 动作类型 |
 | actionParam | String | 动作参数（JSON字符串） |
@@ -370,15 +370,16 @@ GET http://localhost:8080/api/rule/health
 ### 成功匹配日志
 ```
 [RuleMatch] 流水号: TXN20250204001, 场景: IN_TRANSFER, 匹配规则数: 2, 耗时: 15ms
-[RuleMatch] 命中规则: [RULE_001, RULE_002]
+[RuleMatch] 命中规则: [1, 2]
 ```
 
 ### 规则展开日志
 ```
-[RuleMatch] 规则展开: RULE_PARENT_001 -> RULE_CHILD_001
+[RuleMatch] 规则展开: 1 -> 1001
 ```
 
 ### 异常日志
 ```
 [RuleMatch] 处理异常
 java.lang.NullPointerException: ...
+```

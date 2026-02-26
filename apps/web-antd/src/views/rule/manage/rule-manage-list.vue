@@ -27,22 +27,10 @@ const packageInfo = computed(() => ({
 //表格列定义
 const columns = [
   {
-    title: '规则ID',
-    dataIndex: 'ruleId',
-    key: 'ruleId',
-    width: 150,
-  },
-  {
     title: '规则名称',
     dataIndex: 'ruleName',
     key: 'ruleName',
     width: 200,
-  },
-  {
-    title: '规则包',
-    dataIndex: 'packageName',
-    key: 'packageName',
-    width: 150,
   },
   {
     title: '动作类型',

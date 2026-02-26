@@ -62,7 +62,6 @@ GET /api/rule/page?ruleName=示例&page=1&pageSize=10
     "records": [
       {
         "id": 1,
-        "ruleId": "RULE_001",
         "rulePackageId": 1,
         "ruleName": "示例规则",
         "description": "这是一个示例规则",
@@ -74,7 +73,6 @@ GET /api/rule/page?ruleName=示例&page=1&pageSize=10
         "createdAt": "2026-02-10T09:00:00",
         "updatedAt": "2026-02-10T09:00:00",
         "packageName": "示例规则包",
-        "packageCode": "PACKAGE_001",
         "sceneNames": ["场景1", "场景2"]
       }
     ]
@@ -96,7 +94,6 @@ GET /api/rule/page?ruleName=示例&page=1&pageSize=10
 
 | 字段名 | 类型 | 必填 | 说明 |
 |--------|------|------|------|
-| ruleId | String | 是 | 规则标识（唯一） |
 | rulePackageId | Long | 是 | 规则包ID |
 | ruleName | String | 是 | 规则名称 |
 | description | String | 否 | 规则描述 |
@@ -127,7 +124,6 @@ POST /api/rule/create
 Content-Type: application/json
 
 {
-  "ruleId": "RULE_001",
   "rulePackageId": 1,
   "ruleName": "示例规则",
   "description": "这是一个示例规则",
@@ -165,7 +161,6 @@ Content-Type: application/json
   "message": "success",
   "data": {
     "id": 1,
-    "ruleId": "RULE_001",
     "rulePackageId": 1,
     "ruleName": "示例规则",
     "description": "这是一个示例规则",
@@ -210,7 +205,6 @@ GET /api/rule/1
   "message": "success",
   "data": {
     "id": 1,
-    "ruleId": "RULE_001",
     "rulePackageId": 1,
     "ruleName": "示例规则",
     "description": "这是一个示例规则",
@@ -424,7 +418,7 @@ DELETE /api/rule/1
 
 ## 注意事项
 
-1. **规则ID唯一性**: 创建规则时，`ruleId` 必须唯一，否则会返回错误
+1. **规则ID唯一性**: 创建规则时，数据库自动生成唯一ID，无需指定
 2. **ACTIVE状态限制**: ACTIVE状态的规则不允许修改内容，需先将状态改为INACTIVE
 3. **级联删除**: 删除规则时，会自动删除关联的所有条件
 4. **条件替换**: 更新规则时，如果提供了`conditions`字段，会替换原有条件；如果不提供，则保持不变

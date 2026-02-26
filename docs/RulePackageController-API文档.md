@@ -60,7 +60,6 @@ GET /api/rulePackage/page?packageName=示例&page=1&pageSize=10
     "records": [
       {
         "id": 1,
-        "packageCode": "PACKAGE_001",
         "packageName": "示例规则包",
         "description": "这是一个示例规则包",
         "status": "ACTIVE",
@@ -88,7 +87,6 @@ GET /api/rulePackage/page?packageName=示例&page=1&pageSize=10
 
 | 字段名 | 类型 | 必填 | 说明 |
 |--------|------|------|------|
-| packageCode | String | 是 | 规则包编码（唯一） |
 | packageName | String | 是 | 规则包名称 |
 | description | String | 否 | 规则包描述 |
 | status | String | 否 | 状态（默认：ACTIVE） |
@@ -102,7 +100,6 @@ POST /api/rulePackage/create
 Content-Type: application/json
 
 {
-  "packageCode": "PACKAGE_001",
   "packageName": "用户优惠规则包",
   "description": "包含用户优惠相关的所有规则",
   "status": "ACTIVE",
@@ -119,7 +116,6 @@ Content-Type: application/json
   "message": "success",
   "data": {
     "id": 1,
-    "packageCode": "PACKAGE_001",
     "packageName": "用户优惠规则包",
     "description": "包含用户优惠相关的所有规则",
     "status": "ACTIVE",
@@ -130,12 +126,12 @@ Content-Type: application/json
 }
 ```
 
-### 错误响应示例 - 规则包编码已存在
+### 错误响应示例 - 规则包名称已存在
 
 ```json
 {
   "code": 500,
-  "message": "规则包编码已存在：PACKAGE_001",
+  "message": "规则包名称已存在：用户优惠规则包",
   "data": null
 }
 ```
@@ -149,6 +145,7 @@ Content-Type: application/json
 - **请求方式:** `PUT`
 - **请求路径:** `/api/rulePackage/update`
 - **描述:** 更新规则包信息及其场景关联
+- **注意:** ACTIVE状态的规则包不允许修改，需先将状态改为INACTIVE
 
 ### 请求体
 
@@ -246,7 +243,6 @@ DELETE /api/rulePackage/1
 | 字段名 | 类型 | 说明 |
 |--------|------|------|
 | id | Long | 规则包ID（主键） |
-| packageCode | String | 规则包编码（唯一标识） |
 | packageName | String | 规则包名称 |
 | description | String | 规则包描述 |
 | status | String | 状态（ACTIVE, INACTIVE） |
@@ -260,7 +256,6 @@ DELETE /api/rulePackage/1
 | 字段名 | 类型 | 说明 |
 |--------|------|------|
 | id | Long | 规则包ID（主键） |
-| packageCode | String | 规则包编码（唯一标识） |
 | packageName | String | 规则包名称 |
 | description | String | 规则包描述 |
 | status | String | 状态（ACTIVE, INACTIVE） |
@@ -283,7 +278,7 @@ DELETE /api/rulePackage/1
 
 ## 注意事项
 
-1. **规则包编码唯一性**: 创建规则包时，`packageCode` 必须唯一，否则会返回错误
+1. **规则包名称唯一性**: 创建规则包时，`packageName` 必须唯一，否则会返回错误
 2. **场景关联**: 创建或更新规则包时，如果提供了`scenes`字段，会建立或更新与场景的关联关系
 3. **级联删除**: 删除规则包时，会自动删除关联的所有规则和场景关联
 4. **版本管理**: 更新规则包时，版本号会自动递增
@@ -298,7 +293,7 @@ DELETE /api/rulePackage/1
 
 ### 创建规则包流程
 
-1. **参数校验**: 校验规则包编码的唯一性
+1. **参数校验**: 校验规则包名称的唯一性
 2. **创建规则包**: 在数据库中创建规则包记录
 3. **关联场景**: 如果提供了场景列表，建立规则包与场景的关联关系
 4. **更新缓存**: 刷新相关场景的规则缓存
@@ -346,7 +341,6 @@ POST /api/rulePackage/create
 Content-Type: application/json
 
 {
-  "packageCode": "PACKAGE_002",
   "packageName": "风险控制规则包",
   "description": "包含风控相关的所有规则",
   "status": "ACTIVE",
@@ -387,7 +381,6 @@ POST http://localhost:8080/api/rulePackage/create
 Content-Type: application/json
 
 {
-  "packageCode": "PACKAGE_001",
   "packageName": "用户优惠规则包",
   "description": "包含用户优惠相关的所有规则",
   "status": "ACTIVE",
