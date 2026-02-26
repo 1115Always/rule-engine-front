@@ -27,6 +27,8 @@
   },
   "dependencies": {
     "@vben/access": "workspace:*",
+    "@types/json-bigint": "catalog:",
+    "json-bigint": "catalog:",
     "@vben/common-ui": "workspace:*",
     "@vben/constants": "workspace:*",
     "@vben/hooks": "workspace:*",

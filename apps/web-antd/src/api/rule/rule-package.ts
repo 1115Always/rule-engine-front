@@ -2,7 +2,7 @@ import { requestClient } from "#/api/request";
 
 interface RulePackage {
   createTime?: string;
-  id: number;
+  id: string; // 大整数ID，使用字符串类型避免精度丢失
   name: string;
   ruleCount?: number;
   scenes: string[];
@@ -18,7 +18,7 @@ interface RulePackageResponse {
   records: Array<{
     createdAt: string;
     description: string;
-    id: number;
+    id: string; // 大整数ID，使用字符串类型避免精度丢失
     packageCode: string;
     packageName: string;
     scenes: string[];
@@ -83,7 +83,7 @@ interface CreateRulePackageRequest {
 }
 
 interface RulePackageCreateResponse {
-  id: number;
+  id: string; // 大整数ID，使用字符串类型避免精度丢失
   packageCode: string;
   packageName: string;
   description: string;

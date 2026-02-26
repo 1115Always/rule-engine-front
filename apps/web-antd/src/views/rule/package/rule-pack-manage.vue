@@ -10,7 +10,7 @@ import RulePackManageHeader from './rule-pack-manage-header.vue';
 
 interface RulePackage {
   createTime?: string;
-  id: number;
+  id: string; // 大整数ID，使用字符串类型避免精度丢失
   name: string;
   ruleCount?: number;
   scenes: string[];

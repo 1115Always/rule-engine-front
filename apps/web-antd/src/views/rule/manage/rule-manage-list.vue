@@ -16,6 +16,11 @@ import {
 
 import { deleteRuleApi, getRulesApi } from "#/api/rule/rule";
 
+const emit = defineEmits<{
+  view: [record: any];
+  edit: [record: any];
+}>();
+
 const route = useRoute();
 
 // 从路由参数获取规则包信息
@@ -119,14 +124,12 @@ const loadData = async () => {
 
 // 查看规则
 const handleView = (record: any) => {
-  // TODO: 打开查看规则详情弹窗
-  message.info(`查看规则: ${record.name}`);
+  emit('view', record);
 };
 
 // 编辑规则
 const handleEdit = (record: any) => {
-  // TODO: 打开编辑规则弹窗
-  message.info(`编辑规则: ${record.name}`);
+  emit('edit', record);
 };
 
 // 删除规则
@@ -167,6 +170,11 @@ const formatDateTime = (dateTimeStr: string) => {
 //组件挂载时加载数据
 onMounted(() => {
   loadData();
+});
+
+// 对外暴露方法
+defineExpose({
+  loadData,
 });
 </script>
 

@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 
 import { IconifyIcon } from '@vben/icons';
 
 import { Button, Card, Space, Tag } from 'ant-design-vue';
 
 const route = useRoute();
-const router = useRouter();
+
+const emit = defineEmits<{
+  add: [];
+}>();
 
 // 从路由参数获取规则包信息
 const packageInfo = computed(() => ({
@@ -44,17 +47,11 @@ const getScenesDisplayText = () => {
 };
 
 const handleBack = () => {
-  router.back();
+  window.history.back();
 };
 
 const handleAddRule = () => {
-  router.push({
-    name: 'CreateRule',
-    query: {
-      packageId: packageInfo.value.id,
-      packageName: packageInfo.value.name,
-    },
-  });
+  emit('add');
 };
 </script>
 

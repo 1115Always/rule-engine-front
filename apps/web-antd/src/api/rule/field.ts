@@ -2,7 +2,7 @@ import { requestClient } from "#/api/request";
 
 /** 字段选项数据类型 */
 export interface FieldOption {
-  id: number;
+  id: string; // 大整数ID，使用字符串类型避免精度丢失
   fieldCode: string;
   fieldName: string;
   description?: string;

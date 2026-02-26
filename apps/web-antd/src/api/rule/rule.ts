@@ -6,9 +6,9 @@ interface RuleListResponse {
   total: number;
   pages: number;
   records: Array<{
-    id: number;
+    id: string; // 大整数ID，使用字符串类型避免精度丢失
     ruleId: string;
-    rulePackageId: number;
+    rulePackageId: string; // 大整数ID，使用字符串类型避免精度丢失
     ruleName: string;
     description: string;
     actionType: string;
@@ -70,7 +70,7 @@ export async function getRulesApi(params?: {
  *根据ID查询规则详情
  * @param id规则ID
  */
-export async function getRuleDetailApi(id: number) {
+export async function getRuleDetailApi(id: number | string) {
   return await requestClient.get(`/rule/${id}`);
 }
 
@@ -94,6 +94,6 @@ export async function updateRuleApi(data: any) {
  * 删除规则
  * @param id规则ID
  */
-export async function deleteRuleApi(id: number) {
+export async function deleteRuleApi(id: number | string) {
   return await requestClient.delete(`/rule/${id}`);
 }

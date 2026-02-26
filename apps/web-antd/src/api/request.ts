@@ -4,6 +4,9 @@
 import type { RequestClientOptions } from '@vben/request';
 
 import { useAppConfig } from '@vben/hooks';
+
+// @ts-ignore
+import JSONBig from 'json-bigint';
 import { preferences } from '@vben/preferences';
 import {
   authenticateResponseInterceptor,
@@ -21,10 +24,28 @@ import { refreshTokenApi } from './core';
 
 const { apiURL } = useAppConfig(import.meta.env, import.meta.env.PROD);
 
+// 配置 json-bigint，将大整数转换为字符串
+const jsonBig = JSONBig({ storeAsString: true });
+
 function createRequestClient(baseURL: string, options?: RequestClientOptions) {
   const client = new RequestClient({
     ...options,
     baseURL,
+    // 使用 transformResponse 处理大整数精度问题
+    transformResponse: [
+      (data: any) => {
+        if (typeof data === 'string') {
+          try {
+            // 使用 json-bigint 解析，大整数会被转换为字符串
+            return jsonBig.parse(data);
+          } catch (e) {
+            // 如果解析失败，返回原始数据
+            return data;
+          }
+        }
+        return data;
+      },
+    ],
   });
 
   /**

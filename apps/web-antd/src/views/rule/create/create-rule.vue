@@ -113,7 +113,7 @@ const handleSave = async (values: any) => {
 
   // 构建请求数据（接口有但前台没有的字段传空）
   const requestData = {
-    rulePackageId: Number.parseInt(packageInfo.id),
+    rulePackageId: packageInfo.id, // 直接使用字符串，避免大整数精度丢失
     ruleName: values.ruleName,
     description: values.description || '',
     // actionType 是多选数组，取第一个值，如果没有则传空
