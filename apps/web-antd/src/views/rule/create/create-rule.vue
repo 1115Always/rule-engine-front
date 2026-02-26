@@ -4,11 +4,16 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { Button, Input, message, Select } from 'ant-design-vue';
 
+import { useTabs } from '@vben/hooks';
+
 import { useVbenForm } from '#/adapter/form';
 import { getActionOptions } from '#/api/rule/action';
+import { getFieldOptions } from '#/api/rule/field';
+import { createRuleApi } from '#/api/rule/rule';
 
 const route = useRoute();
 const router = useRouter();
+const { closeCurrentTab } = useTabs();
 
 // 从路由参数获取规则包信息
 const packageInfo = {
@@ -40,14 +45,12 @@ interface ConditionItem {
 }
 
 // 字段选项
-const fieldOptions = [
-  { label: '用户ID', value: '1' },
-  { label: '用户名', value: '2' },
-  { label: '年龄', value: '3' },
-  { label: '性别', value: '4' },
-  { label: '部门', value: '5' },
-  { label: '职位', value: '6' },
-];
+const fieldOptions = ref<any[]>([]);
+
+// 字段选项过滤函数
+const filterFieldOptions = (input: string, option: any) => {
+  return option.label.toLowerCase().includes(input.toLowerCase());
+};
 
 // 操作符选项
 const operatorOptions = [
@@ -78,9 +81,21 @@ const loadActionOptions = async () => {
   }
 };
 
-// 组件挂载时加载动作类型选项
+// 获取字段选项
+const loadFieldOptions = async (params?: { fieldCode?: string; fieldName?: string }) => {
+  try {
+    console.log(JSON.stringify(params))
+    fieldOptions.value = await getFieldOptions(params);
+  } catch (error) {
+    console.error('获取字段列表失败:', error);
+    message.error('获取字段列表失败');
+  }
+};
+
+// 组件挂载时加载数据
 onMounted(() => {
   loadActionOptions();
+  loadFieldOptions();
 });
 
 // 返回上一页
@@ -96,35 +111,37 @@ const handleSave = async (values: any) => {
     throw new Error('请至少添加一个条件');
   }
 
-  // 构建请求数据
+  // 构建请求数据（接口有但前台没有的字段传空）
   const requestData = {
-    ...values,
     rulePackageId: Number.parseInt(packageInfo.id),
+    ruleName: values.ruleName,
+    description: values.description || '',
+    // actionType 是多选数组，取第一个值，如果没有则传空
+    actionType: values.actionType?.[0] || '',
+    actionParam: '',
+    conditionRelation: values.conditionRelation || '',
+    status: 'ACTIVE',
+    version: 1,
     conditions: conditions.value.map((item) => ({
       conditionKey: item.conditionKey,
-      conditionName: item.conditionName,
+      conditionName: item.conditionName || '',
       conditionType: item.conditionType,
-      fieldName: item.fieldName,
-      operator: item.operator,
-      conditionValue: item.conditionValue,
-      expression: item.expression,
+      fieldName: item.fieldName || '',
+      operator: item.operator || '',
+      conditionValue: item.conditionValue || '',
+      expression: item.expression || '',
       sortOrder: item.sortOrder,
     })),
   };
 
-  // TODO: 调用API创建规则
-  // console.log('创建规则请求数据:', requestData);
-
-  // 模拟API调用
   try {
-    // 这里应该调用实际的API
-    // await createRule(requestData);
-
+    console.log(JSON.stringify(requestData))
+    await createRuleApi(requestData);
     message.success('规则创建成功');
-    // 返回规则包管理页面
-    router.back();
-  } catch (apiError) {
-    message.error('规则创建失败，请稍后重试');
+    // 关闭当前标签页
+    await closeCurrentTab();
+  } catch (apiError: any) {
+    message.error(apiError.message || '规则创建失败，请稍后重试');
     throw apiError;
   }
 };
@@ -153,7 +170,7 @@ const initializeForm = () => {
         componentProps: {
           placeholder: '请输入规则名称',
         },
-        rules: '请输入规则名称',
+        rules: 'required',
         formItemClass: 'col-span-1',
       },
       {
@@ -166,7 +183,7 @@ const initializeForm = () => {
           options: actionTypeOptions.value,
           class: 'w-full',
         },
-        rules: '请选择动作类型',
+        rules: 'required',
         formItemClass: 'col-span-1',
       },
       {
@@ -228,6 +245,18 @@ const removeCondition = (index: number) => {
     item.conditionKey = `c${idx + 1}`;
   });
 };
+
+// 保存按钮点击处理
+const handleSaveClick = async () => {
+  // 先触发表单验证
+  const isValid = await formApiRef.value?.validate?.();
+  if (!isValid) {
+    return;
+  }
+  // 获取表单值并提交
+  const values = await formApiRef.value?.getValues?.();
+  await handleSave(values);
+};
 </script>
 
 <template>
@@ -271,6 +300,8 @@ const removeCondition = (index: number) => {
               <Select
                 v-model:value="condition.fieldName"
                 :options="fieldOptions"
+                show-search
+                :filter-option="filterFieldOptions"
                 class="flex-1"
               />
             </div>
@@ -307,7 +338,7 @@ const removeCondition = (index: number) => {
       <div class="flex justify-end gap-3 pt-4">
         <Button @click="handleBack">取消</Button>
         <Button @click="() => { formApiRef.value?.resetForm?.(); conditions = []; }">重置</Button>
-        <Button type="primary" @click="() => FormRef.value?.submit()">保存规则</Button>
+        <Button type="primary" @click="handleSaveClick">保存规则</Button>
       </div>
     </a-card>
 
