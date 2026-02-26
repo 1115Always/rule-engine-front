@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch, shallowRef, nextTick } from 'vue';
+import {
+  computed,
+  onMounted,
+  reactive,
+  ref,
+  watch,
+  shallowRef,
+  nextTick,
+} from 'vue';
 
 import { useVbenModal } from '@vben/common-ui';
 
@@ -8,7 +16,11 @@ import { Button, Input, message, Select } from 'ant-design-vue';
 import { useVbenForm } from '#/adapter/form';
 import { getActionOptions } from '#/api/rule/action';
 import { getFieldOptions } from '#/api/rule/field';
-import { createRuleApi, getRuleDetailApi, updateRuleApi } from '#/api/rule/rule';
+import {
+  createRuleApi,
+  getRuleDetailApi,
+  updateRuleApi,
+} from '#/api/rule/rule';
 
 // 条件项类型
 interface ConditionItem {
@@ -110,7 +122,10 @@ const loadActionOptions = async () => {
 };
 
 // 获取字段选项
-const loadFieldOptions = async (params?: { fieldCode?: string; fieldName?: string }) => {
+const loadFieldOptions = async (params?: {
+  fieldCode?: string;
+  fieldName?: string;
+}) => {
   try {
     fieldOptions.value = await getFieldOptions(params);
   } catch (error) {
@@ -130,7 +145,7 @@ const loadRuleDetail = async (id: number | string) => {
     formModel.actionType = detail.actionType ? [detail.actionType] : [];
     formModel.actionParam = detail.actionParam || '';
     formModel.conditionRelation = detail.conditionRelation || '';
-    
+
     // 填充条件列表
     if (detail.conditions && detail.conditions.length > 0) {
       conditions.value = detail.conditions.map((item: any, index: number) => ({
@@ -147,7 +162,7 @@ const loadRuleDetail = async (id: number | string) => {
     } else {
       conditions.value = [];
     }
-    
+
     // 更新表单值
     nextTick(() => {
       formApiRef.value?.setValues?.({
@@ -174,7 +189,7 @@ const resetForm = () => {
   formModel.conditionRelation = '';
   conditions.value = [];
   currentRuleId.value = null;
-  
+
   nextTick(() => {
     formApiRef.value?.resetForm?.();
   });
@@ -342,23 +357,30 @@ const initializeForm = () => {
 };
 
 // 监听动作类型选项变化，重新初始化表单
-watch(() => actionTypeOptions.value, () => {
-  initializeForm();
-}, { immediate: true });
+watch(
+  () => actionTypeOptions.value,
+  () => {
+    initializeForm();
+  },
+  { immediate: true },
+);
 
 // 监听只读状态变化，更新表单
-watch(() => isReadonly.value, () => {
-  initializeForm();
-  // 重新设置表单值
-  nextTick(() => {
-    formApiRef.value?.setValues?.({
-      ruleName: formModel.ruleName,
-      description: formModel.description,
-      actionType: formModel.actionType,
-      conditionRelation: formModel.conditionRelation,
+watch(
+  () => isReadonly.value,
+  () => {
+    initializeForm();
+    // 重新设置表单值
+    nextTick(() => {
+      formApiRef.value?.setValues?.({
+        ruleName: formModel.ruleName,
+        description: formModel.description,
+        actionType: formModel.actionType,
+        conditionRelation: formModel.conditionRelation,
+      });
     });
-  });
-});
+  },
+);
 
 // 添加条件
 const addCondition = () => {
@@ -425,11 +447,15 @@ onMounted(() => {
 });
 
 // 对外暴露方法
-const open = (mode: ModalMode, pkgInfo: { id: string; name: string }, ruleId?: number | string) => {
+const open = (
+  mode: ModalMode,
+  pkgInfo: { id: string; name: string },
+  ruleId?: number | string,
+) => {
   console.log('打开对话框:', mode, pkgInfo, ruleId);
   modalMode.value = mode;
   packageInfo.value = pkgInfo;
-  
+
   if (ruleId !== undefined && ruleId !== null) {
     currentRuleId.value = ruleId;
     loadRuleDetail(ruleId);
@@ -437,7 +463,7 @@ const open = (mode: ModalMode, pkgInfo: { id: string; name: string }, ruleId?: n
     currentRuleId.value = null;
     resetForm();
   }
-  
+
   modalApi.open();
 };
 
@@ -448,9 +474,7 @@ defineExpose({
 
 <template>
   <Modal>
-    <div v-if="loading" class="py-8 text-center">
-      加载中...
-    </div>
+    <div v-if="loading" class="py-8 text-center">加载中...</div>
     <div v-else>
       <!-- 规则基本信息 -->
       <div class="mb-6">
@@ -462,7 +486,9 @@ defineExpose({
       <div class="mb-6">
         <div class="mb-4 font-medium">规则条件</div>
         <div v-if="!isReadonly" class="mb-4">
-          <Button type="primary" @click="addCondition" block> + 添加条件 </Button>
+          <Button type="primary" @click="addCondition" block>
+            + 添加条件
+          </Button>
         </div>
 
         <div
@@ -480,8 +506,10 @@ defineExpose({
           >
             <!-- 使用 flex 布局让 label 和 input 在同一行 -->
             <div class="mb-4 flex flex-wrap items-center gap-4">
-              <div class="flex flex-1 min-w-[200px] items-center gap-2">
-                <label class="shrink-0 text-sm text-gray-600">{{ `条件${condition.conditionKey}` }}</label>
+              <div class="flex min-w-[200px] flex-1 items-center gap-2">
+                <label class="shrink-0 text-sm text-gray-600">{{
+                  `条件${condition.conditionKey}`
+                }}</label>
                 <Input
                   v-model:value="condition.conditionName"
                   placeholder="请输入条件名称"
@@ -489,7 +517,7 @@ defineExpose({
                   :disabled="isReadonly"
                 />
               </div>
-              <div class="flex flex-1 min-w-[150px] items-center gap-2">
+              <div class="flex min-w-[150px] flex-1 items-center gap-2">
                 <label class="shrink-0 text-sm text-gray-600">字段</label>
                 <Select
                   v-model:value="condition.fieldName"
@@ -500,7 +528,7 @@ defineExpose({
                   :disabled="isReadonly"
                 />
               </div>
-              <div class="flex flex-1 min-w-[100px] items-center gap-2">
+              <div class="flex min-w-[100px] flex-1 items-center gap-2">
                 <label class="shrink-0 text-sm text-gray-600">操作符</label>
                 <Select
                   v-model:value="condition.operator"
@@ -509,7 +537,7 @@ defineExpose({
                   :disabled="isReadonly"
                 />
               </div>
-              <div class="flex flex-1 min-w-[200px] items-center gap-2">
+              <div class="flex min-w-[200px] flex-1 items-center gap-2">
                 <label class="shrink-0 text-sm text-gray-600">条件值</label>
                 <Input
                   v-model:value="condition.conditionValue"
@@ -518,16 +546,9 @@ defineExpose({
                   :disabled="isReadonly"
                 />
               </div>
-              <Button v-if="!isReadonly" danger @click="removeCondition(index)"> 删除 </Button>
-            </div>
-
-            <div v-if="condition.conditionType === 'EVAL'" class="mt-4">
-              <div class="mb-1 text-sm text-gray-600">表达式</div>
-              <Input
-                v-model:value="condition.expression"
-                placeholder="请输入表达式"
-                :disabled="isReadonly"
-              />
+              <Button v-if="!isReadonly" danger @click="removeCondition(index)">
+                删除
+              </Button>
             </div>
           </div>
         </div>

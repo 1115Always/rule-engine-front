@@ -82,9 +82,12 @@ const loadActionOptions = async () => {
 };
 
 // 获取字段选项
-const loadFieldOptions = async (params?: { fieldCode?: string; fieldName?: string }) => {
+const loadFieldOptions = async (params?: {
+  fieldCode?: string;
+  fieldName?: string;
+}) => {
   try {
-    console.log(JSON.stringify(params))
+    console.log(JSON.stringify(params));
     fieldOptions.value = await getFieldOptions(params);
   } catch (error) {
     console.error('获取字段列表失败:', error);
@@ -135,7 +138,7 @@ const handleSave = async (values: any) => {
   };
 
   try {
-    console.log(JSON.stringify(requestData))
+    console.log(JSON.stringify(requestData));
     await createRuleApi(requestData);
     message.success('规则创建成功');
     // 关闭当前标签页
@@ -216,9 +219,13 @@ const initializeForm = () => {
 initializeForm();
 
 // 监听动作类型选项变化，重新初始化表单
-watch(() => actionTypeOptions.value, () => {
-  initializeForm();
-}, { immediate: true });
+watch(
+  () => actionTypeOptions.value,
+  () => {
+    initializeForm();
+  },
+  { immediate: true },
+);
 
 // 添加条件
 const addCondition = () => {
@@ -287,15 +294,17 @@ const handleSaveClick = async () => {
         >
           <!-- 使用 flex 布局让 label 和 input 在同一行 -->
           <div class="mb-4 flex flex-wrap items-center gap-4">
-            <div class="flex flex-1 min-w-[200px] items-center gap-2">
-              <label class="shrink-0 text-sm text-gray-600">{{ `条件${condition.conditionKey}` }}</label>
+            <div class="flex min-w-[200px] flex-1 items-center gap-2">
+              <label class="shrink-0 text-sm text-gray-600">{{
+                `条件${condition.conditionKey}`
+              }}</label>
               <Input
                 v-model:value="condition.conditionName"
                 placeholder="请输入条件名称"
                 class="flex-1"
               />
             </div>
-            <div class="flex flex-1 min-w-[150px] items-center gap-2">
+            <div class="flex min-w-[150px] flex-1 items-center gap-2">
               <label class="shrink-0 text-sm text-gray-600">字段</label>
               <Select
                 v-model:value="condition.fieldName"
@@ -305,7 +314,7 @@ const handleSaveClick = async () => {
                 class="flex-1"
               />
             </div>
-            <div class="flex flex-1 min-w-[100px] items-center gap-2">
+            <div class="flex min-w-[100px] flex-1 items-center gap-2">
               <label class="shrink-0 text-sm text-gray-600">操作符</label>
               <Select
                 v-model:value="condition.operator"
@@ -313,7 +322,7 @@ const handleSaveClick = async () => {
                 class="flex-1"
               />
             </div>
-            <div class="flex flex-1 min-w-[200px] items-center gap-2">
+            <div class="flex min-w-[200px] flex-1 items-center gap-2">
               <label class="shrink-0 text-sm text-gray-600">条件值</label>
               <Input
                 v-model:value="condition.conditionValue"
@@ -323,25 +332,24 @@ const handleSaveClick = async () => {
             </div>
             <Button danger @click="removeCondition(index)"> 删除 </Button>
           </div>
-
-          <div v-if="condition.conditionType === 'EVAL'" class="mt-4">
-            <div class="mb-1 text-sm text-gray-600">表达式</div>
-            <Input
-              v-model:value="condition.expression"
-              placeholder="请输入表达式"
-            />
-          </div>
         </div>
       </div>
 
       <!-- 操作按钮 -->
       <div class="flex justify-end gap-3 pt-4">
         <Button @click="handleBack">取消</Button>
-        <Button @click="() => { formApiRef.value?.resetForm?.(); conditions = []; }">重置</Button>
+        <Button
+          @click="
+            () => {
+              formApiRef.value?.resetForm?.();
+              conditions = [];
+            }
+          "
+          >重置</Button
+        >
         <Button type="primary" @click="handleSaveClick">保存规则</Button>
       </div>
     </a-card>
-
   </div>
 </template>
 

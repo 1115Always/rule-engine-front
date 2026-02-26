@@ -21,7 +21,7 @@ const packageInfo = computed(() => ({
 
 //场显示相关
 const MAX_SCENE_LENGTH = 100; // 最大显示长度
-const MAX_SCENE_COUNT = 3;   // 最多显示场景数
+const MAX_SCENE_COUNT = 8; // 最多显示场景数
 
 const displayScenes = computed(() => {
   const scenes = packageInfo.value.scenes || [];
@@ -41,8 +41,8 @@ const remainingScenesCount = computed(() => {
 const getScenesDisplayText = () => {
   const scenes = displayScenes.value;
   const text = scenes.join('、');
-  return text.length > MAX_SCENE_LENGTH 
-    ? text.substring(0, MAX_SCENE_LENGTH) + '...' 
+  return text.length > MAX_SCENE_LENGTH
+    ? text.substring(0, MAX_SCENE_LENGTH) + '...'
     : text;
 };
 
@@ -64,28 +64,20 @@ const handleAddRule = () => {
             {{ packageInfo.name || '规则包' }}
           </h2>
         </div>
-        
+
         <div class="flex items-center gap-4 text-sm">
-          <div class="text-gray-500">
-           规则包ID: <span class="font-medium text-gray-800">{{ packageInfo.id || '-' }}</span>
-          </div>
-          
           <div v-if="displayScenes.length > 0" class="flex items-center gap-2">
             <span class="text-gray-500">规则场景:</span>
-            <div class="flex flex-wrap gap-1 max-w-xs">
-              <Tag 
-                v-for="scene in displayScenes" 
-                :key="scene" 
-                color="blue" 
+            <div class="flex max-w-xs flex-wrap gap-1">
+              <Tag
+                v-for="scene in displayScenes"
+                :key="scene"
+                color="blue"
                 class="text-xs"
               >
                 {{ scene }}
               </Tag>
-              <Tag 
-                v-if="hasMoreScenes" 
-                color="blue" 
-                class="text-xs"
-              >
+              <Tag v-if="hasMoreScenes" color="blue" class="text-xs">
                 +{{ remainingScenesCount }}
               </Tag>
             </div>

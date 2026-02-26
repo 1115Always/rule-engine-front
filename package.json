@@ -74,8 +74,7 @@
     "cross-env": "catalog:",
     "cspell": "catalog:",
     "happy-dom": "catalog:",
-    "is-ci": "catalog:",
-    "lefthook": "catalog:",
+     "is-ci": "catalog:",
     "playwright": "catalog:",
     "rimraf": "catalog:",
     "tailwindcss": "catalog:",
@@ -93,11 +92,6 @@
   },
   "packageManager": "pnpm@10.22.0",
   "pnpm": {
-    "peerDependencyRules": {
-      "allowedVersions": {
-        "eslint": "*"
-      }
-    },
     "overrides": {
       "@ast-grep/napi": "catalog:",
       "@ctrl/tinycolor": "catalog:",
