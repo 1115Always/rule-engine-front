@@ -30,15 +30,6 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
-        name: 'CreateRule',
-        path: 'create-rule',
-        component: () => import('#/views/rule/create/create-rule.vue'),
-        meta: {
-          hideInMenu: true,
-          title: '新建规则',
-        },
-      },
-      {
         name: 'Field',
         path: 'field',
         component: () => import('#/views/rule/field/index.vue'),
