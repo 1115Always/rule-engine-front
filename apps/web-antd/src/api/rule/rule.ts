@@ -97,3 +97,12 @@ export async function updateRuleApi(data: any) {
 export async function deleteRuleApi(id: number | string) {
   return await requestClient.delete(`/rule/${id}`);
 }
+
+/**
+ * 更新规则状态
+ * @param id 规则ID
+ * @param status 状态（ACTIVE/INACTIVE）
+ */
+export async function updateRuleStatusApi(id: number | string, status: string) {
+  return await requestClient.put("/rule/updateStatus", { id, status });
+}

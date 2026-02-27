@@ -16,7 +16,7 @@ import {
 } from 'ant-design-vue';
 
 import { getActionOptions } from "#/api/rule/action";
-import { deleteRuleApi, getRulesApi } from "#/api/rule/rule";
+import { deleteRuleApi, getRulesApi, updateRuleStatusApi } from "#/api/rule/rule";
 
 const emit = defineEmits<{
   edit: [record: any];
@@ -133,6 +133,12 @@ const handleEdit = (record: any) => {
 
 // 删除规则
 const handleDelete = (record: any) => {
+  // 校验：ACTIVE 状态不允许删除
+  if (record.status === 'ACTIVE') {
+    message.warning('规则处于上线状态，请先下线后再删除');
+    return;
+  }
+
   Modal.confirm({
     title: '确认删除',
     content: `确定要删除规则"${record.ruleName}"吗？`,
@@ -150,14 +156,21 @@ const handleDelete = (record: any) => {
   });
 };
 
-// 获取状态标签颜色
-const getStatusColor = (status: string) => {
-  return status === 'ACTIVE' ? 'green' : 'default';
-};
+// 切换规则状态（上线/下线）
+const handleToggleStatus = async (record: any) => {
+  const isActive = record.status === 'ACTIVE';
+  const newStatus = isActive ? 'INACTIVE' : 'ACTIVE';
+  const actionText = isActive ? '下线' : '上线';
 
-// 获取状态文本
-const getStatusText = (status: string) => {
-  return status === 'ACTIVE' ? '启用' : '禁用';
+  try {
+    await updateRuleStatusApi(record.id, newStatus);
+    message.success(`${actionText}成功`);
+    // 刷新列表
+    loadData();
+  } catch (error) {
+    console.error(`${actionText}失败:`, error);
+    message.error(`${actionText}失败`);
+  }
 };
 
 // 格式化日期时间
@@ -225,9 +238,23 @@ defineExpose({
     >
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'status'">
-          <Tag :color="getStatusColor(record.status)">
-            {{ getStatusText(record.status) }}
-          </Tag>
+          <Button
+            v-if="record.status === 'ACTIVE'"
+            type="primary"
+            danger
+            size="small"
+            @click="handleToggleStatus(record)"
+          >
+            下线
+          </Button>
+          <Button
+            v-else
+            type="primary"
+            size="small"
+            @click="handleToggleStatus(record)"
+          >
+            上线
+          </Button>
         </template>
         <template v-else-if="column.key === 'createdAt'">
           {{ formatDateTime(record.createdAt) }}

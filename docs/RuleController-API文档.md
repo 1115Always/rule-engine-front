@@ -344,7 +344,56 @@ Content-Type: application/json
 
 ---
 
-## 5. 删除规则
+## 5. 更新规则状态
+
+### 接口信息
+
+- **请求方式:** `PUT`
+- **请求路径:** `/api/rule/updateStatus`
+- **描述:** 更新规则状态，状态值必须为 ACTIVE 或 INACTIVE
+
+### 请求体
+
+| 字段名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| id | Long | 是 | 规则ID（数据库主键） |
+| status | String | 是 | 状态，必须为 ACTIVE 或 INACTIVE |
+
+### 请求示例
+
+```http
+PUT /api/rule/updateStatus
+Content-Type: application/json
+
+{
+  "id": 1,
+  "status": "INACTIVE"
+}
+```
+
+### 响应示例
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": null
+}
+```
+
+### 错误响应示例
+
+```json
+{
+  "code": 500,
+  "message": "规则状态值无效，必须为 ACTIVE 或 INACTIVE",
+  "data": null
+}
+```
+
+---
+
+## 6. 删除规则
 
 ### 接口信息
 
@@ -384,6 +433,14 @@ DELETE /api/rule/1
 }
 ```
 
+```json
+{
+  "code": 500,
+  "message": "规则状态为ACTIVE，不允许删除。请先将规则状态修改为INACTIVE后再删除，ID: 1",
+  "data": null
+}
+```
+
 ---
 
 ## 枚举值说明
@@ -419,7 +476,7 @@ DELETE /api/rule/1
 ## 注意事项
 
 1. **规则ID唯一性**: 创建规则时，数据库自动生成唯一ID，无需指定
-2. **ACTIVE状态限制**: ACTIVE状态的规则不允许修改内容，需先将状态改为INACTIVE
+2. **ACTIVE状态限制**: ACTIVE状态的规则不允许修改或删除，需先将状态改为INACTIVE
 3. **级联删除**: 删除规则时，会自动删除关联的所有条件
 4. **条件替换**: 更新规则时，如果提供了`conditions`字段，会替换原有条件；如果不提供，则保持不变
 5. **版本管理**: 更新规则时，版本号会自动递增，旧版本信息会保存到版本历史表
