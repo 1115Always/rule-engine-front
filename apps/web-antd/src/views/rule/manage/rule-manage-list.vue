@@ -44,12 +44,7 @@ const columns = [
     key: 'actionType',
     width: 120,
   },
-  {
-    title: '状态',
-    dataIndex: 'status',
-    key: 'status',
-    width: 100,
-  },
+
   {
     title: '规则描述',
     dataIndex: 'description',
@@ -72,7 +67,7 @@ const columns = [
   {
     title: '操作',
     key: 'action',
-    width: 200,
+    width: 240,
   },
 ];
 
@@ -237,26 +232,7 @@ defineExpose({
       @change="handleTableChange"
     >
       <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'status'">
-          <Button
-            v-if="record.status === 'ACTIVE'"
-            type="primary"
-            danger
-            size="small"
-            @click="handleToggleStatus(record)"
-          >
-            下线
-          </Button>
-          <Button
-            v-else
-            type="primary"
-            size="small"
-            @click="handleToggleStatus(record)"
-          >
-            上线
-          </Button>
-        </template>
-        <template v-else-if="column.key === 'createdAt'">
+        <template v-if="column.key === 'createdAt'">
           {{ formatDateTime(record.createdAt) }}
         </template>
         <template v-else-if="column.key === 'updatedAt'">
@@ -287,7 +263,26 @@ defineExpose({
         <template v-else-if="column.key === 'action'">
           <Space>
             <Button
-              type="link"
+              v-if="record.status === 'ACTIVE'"
+              type="primary"
+              danger
+              size="small"
+              @click="handleToggleStatus(record)"
+            >
+              <IconifyIcon icon="ant-design:arrow-down-outlined" />
+              下线
+            </Button>
+            <Button
+              v-else
+              type="primary"
+              size="small"
+              @click="handleToggleStatus(record)"
+            >
+              <IconifyIcon icon="ant-design:arrow-up-outlined" />
+              上线
+            </Button>
+            <Button
+              type="primary"
               danger
               size="small"
               @click="handleDelete(record)"
