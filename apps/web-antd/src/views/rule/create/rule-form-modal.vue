@@ -275,7 +275,7 @@ const clearExpression = () => {
 };
 
 // 快速生成模板表达式
-const quickGenerateTemplate = (type: 'all_and' | 'all_or' | 'grouped') => {
+const quickGenerateTemplate = (type: 'all_and' | 'all_or' | 'custom') => {
   const keys = availableConditionKeys.value;
   if (keys.length === 0) {
     message.warning('请先添加条件');
@@ -283,21 +283,15 @@ const quickGenerateTemplate = (type: 'all_and' | 'all_or' | 'grouped') => {
   }
 
   if (type === 'all_and') {
-    customExpression.value = keys.join(' AND ');
+    logicRelationType.value = 'ALL_AND';
+    customExpression.value = '';
   } else if (type === 'all_or') {
-    customExpression.value = keys.join(' OR ');
-  } else if (type === 'grouped') {
-    // 分组模式：每两个条件一组
-    const groups: string[] = [];
-    for (let i = 0; i < keys.length; i += 2) {
-      const groupKeys = keys.slice(i, i + 2);
-      if (groupKeys.length === 1) {
-        groups.push(groupKeys[0]);
-      } else {
-        groups.push(`(${groupKeys.join(' AND ')})`);
-      }
-    }
-    customExpression.value = groups.join(' OR ');
+    logicRelationType.value = 'ALL_OR';
+    customExpression.value = '';
+  } else if (type === 'custom') {
+    logicRelationType.value = 'CUSTOM';
+    // 默认生成全且表达式作为基础
+    customExpression.value = keys.join(' AND ');
   }
 };
 
@@ -314,6 +308,7 @@ const filterFieldOptions = (input: string, option: any) => {
 
 // 操作符选项
 const operatorOptions = [
+  { label: '请选择', value: '' },
   { label: '等于', value: '=' },
   { label: '不等于', value: '!=' },
   { label: '大于', value: '>' },
@@ -442,13 +437,19 @@ const loadRuleDetail = async (id: number | string) => {
     }
 
     // 解析条件关系表达式，推断逻辑关系类型
-    const parsed = parseConditionRelation(formModel.conditionRelation);
-    logicRelationType.value = parsed.type;
-    // 如果是自定义模式，设置自定义表达式
-    if (parsed.type === 'CUSTOM') {
-      customExpression.value = formModel.conditionRelation;
-    } else {
+    // 特殊情况：如果只有一个条件，默认为全且
+    if (conditions.value.length === 1) {
+      logicRelationType.value = 'ALL_AND';
       customExpression.value = '';
+    } else {
+      const parsed = parseConditionRelation(formModel.conditionRelation);
+      logicRelationType.value = parsed.type;
+      // 如果是自定义模式，设置自定义表达式
+      if (parsed.type === 'CUSTOM') {
+        customExpression.value = formModel.conditionRelation;
+      } else {
+        customExpression.value = '';
+      }
     }
 
     // 更新表单值
@@ -490,6 +491,23 @@ const handleCreateSave = async (values: any) => {
   if (conditions.value.length === 0) {
     message.error('请至少添加一个条件');
     throw new Error('请至少添加一个条件');
+  }
+
+  // 验证条件必填项
+  for (const cond of conditions.value) {
+    if (!cond.conditionName?.trim()) {
+      message.error(`条件 ${cond.conditionKey} 的条件名称为必填项`);
+      throw new Error('条件名称验证失败');
+    }
+    if (!cond.fieldName?.trim()) {
+      message.error(`条件 ${cond.conditionKey} 的字段为必填项`);
+      throw new Error('条件字段验证失败');
+    }
+    // 如果操作符不为空，则条件值必填
+    if (cond.operator?.trim() && !cond.conditionValue?.trim()) {
+      message.error(`条件 ${cond.conditionKey} 的操作符已选择，条件值为必填项`);
+      throw new Error('条件值验证失败');
+    }
   }
 
   // 验证自定义逻辑关系
@@ -547,6 +565,23 @@ const handleEditSave = async (values: any) => {
   if (conditions.value.length === 0) {
     message.error('请至少添加一个条件');
     throw new Error('请至少添加一个条件');
+  }
+
+  // 验证条件必填项
+  for (const cond of conditions.value) {
+    if (!cond.conditionName?.trim()) {
+      message.error(`条件 ${cond.conditionKey} 的条件名称为必填项`);
+      throw new Error('条件名称验证失败');
+    }
+    if (!cond.fieldName?.trim()) {
+      message.error(`条件 ${cond.conditionKey} 的字段为必填项`);
+      throw new Error('条件字段验证失败');
+    }
+    // 如果操作符不为空，则条件值必填
+    if (cond.operator?.trim() && !cond.conditionValue?.trim()) {
+      message.error(`条件 ${cond.conditionKey} 的操作符已选择，条件值为必填项`);
+      throw new Error('条件值验证失败');
+    }
   }
 
   // 验证自定义逻辑关系
@@ -685,10 +720,11 @@ watch(
 
 // 添加条件
 const addCondition = () => {
+  const conditionKey = `c${conditions.value.length + 1}`;
   const newCondition: ConditionItem = {
     id: Date.now().toString(),
-    conditionKey: `c${conditions.value.length + 1}`,
-    conditionName: '',
+    conditionKey,
+    conditionName: `条件${conditionKey}`,
     conditionType: 'EXACT',
     fieldName: '',
     operator: '=',
@@ -776,93 +812,51 @@ defineExpose({
         <component :is="FormRef" v-if="FormRef" />
       </div>
 
-      <!-- 规则条件 -->
-      <div class="mb-6">
-        <div class="mb-4 font-medium">规则条件</div>
-        <div v-if="!isReadonly" class="mb-4">
-          <Button type="primary" @click="addCondition" block>
-            + 添加条件
-          </Button>
-        </div>
-
-        <div
-          v-if="conditions.length === 0"
-          class="py-8 text-center text-gray-500"
-        >
-          暂无条件，请点击上方按钮添加条件
-        </div>
-
-        <div v-else>
-          <div
-            v-for="(condition, index) in conditions"
-            :key="condition.id"
-            class="mb-4 rounded-lg border p-4"
-          >
-            <!-- 使用 flex 布局让 label 和 input 在同一行 -->
-            <div class="mb-4 flex flex-wrap items-center gap-4">
-              <div class="flex min-w-[200px] flex-1 items-center gap-2">
-                <label class="shrink-0 text-sm text-gray-600">{{
-                  `条件${condition.conditionKey}`
-                }}</label>
-                <Input
-                  v-model:value="condition.conditionName"
-                  placeholder="请输入条件名称"
-                  class="flex-1"
-                  :disabled="isReadonly"
-                />
-              </div>
-              <div class="flex min-w-[150px] flex-1 items-center gap-2">
-                <label class="shrink-0 text-sm text-gray-600">字段</label>
-                <Select
-                  v-model:value="condition.fieldName"
-                  :options="fieldOptions"
-                  show-search
-                  :filter-option="filterFieldOptions"
-                  class="flex-1"
-                  :disabled="isReadonly"
-                />
-              </div>
-              <div class="flex min-w-[100px] flex-1 items-center gap-2">
-                <label class="shrink-0 text-sm text-gray-600">操作符</label>
-                <Select
-                  v-model:value="condition.operator"
-                  :options="operatorOptions"
-                  class="flex-1"
-                  :disabled="isReadonly"
-                />
-              </div>
-              <div class="flex min-w-[200px] flex-1 items-center gap-2">
-                <label class="shrink-0 text-sm text-gray-600">条件值</label>
-                <Input
-                  v-model:value="condition.conditionValue"
-                  placeholder="请输入条件值"
-                  class="flex-1"
-                  :disabled="isReadonly"
-                />
-              </div>
-              <Button v-if="!isReadonly" danger @click="removeCondition(index)">
-                删除
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- 逻辑关系配置 -->
-      <div v-if="conditions.length > 0" class="mb-6">
+      <div class="mb-6">
         <div class="mb-4 font-medium">逻辑关系</div>
         <div class="rounded-lg border p-4">
+          <!-- 快捷模板 -->
           <div class="mb-4">
-            <label class="mb-2 block text-sm text-gray-600">关系类型</label>
-            <Select
-              v-model:value="logicRelationType"
-              :options="logicRelationTypeOptions"
-              class="w-full"
-              :disabled="isReadonly"
-            />
+            <label class="mb-2 block text-sm text-gray-600">快捷模板</label>
+            <Space wrap>
+              <Button
+                size="small"
+                :type="logicRelationType === 'ALL_AND' ? 'primary' : 'default'"
+                :disabled="isReadonly"
+                @click="quickGenerateTemplate('all_and')"
+              >
+                全且
+              </Button>
+              <Button
+                size="small"
+                :type="logicRelationType === 'ALL_OR' ? 'primary' : 'default'"
+                :disabled="isReadonly"
+                @click="quickGenerateTemplate('all_or')"
+              >
+                全或
+              </Button>
+              <Button
+                size="small"
+                :type="logicRelationType === 'CUSTOM' ? 'primary' : 'default'"
+                :disabled="isReadonly"
+                @click="quickGenerateTemplate('custom')"
+              >
+                自定义
+              </Button>
+              <Button
+                v-if="logicRelationType === 'CUSTOM'"
+                size="small"
+                danger
+                :disabled="isReadonly || !customExpression"
+                @click="clearExpression"
+              >
+                清空
+              </Button>
+            </Space>
           </div>
 
-          <!-- 自动生成的表达式预览 -->
+          <!-- 全且/全或模式：显示生成的表达式 -->
           <div v-if="logicRelationType !== 'CUSTOM'" class="mb-2">
             <label class="mb-2 block text-sm text-gray-600">生成的表达式</label>
             <div class="rounded bg-gray-50 p-3 font-mono text-sm">
@@ -872,41 +866,6 @@ defineExpose({
 
           <!-- 自定义表达式配置 -->
           <div v-else>
-            <!-- 快捷模板 -->
-            <div class="mb-4">
-              <label class="mb-2 block text-sm text-gray-600">快捷模板</label>
-              <Space wrap>
-                <Button
-                  size="small"
-                  :disabled="isReadonly"
-                  @click="quickGenerateTemplate('all_and')"
-                >
-                  全且
-                </Button>
-                <Button
-                  size="small"
-                  :disabled="isReadonly"
-                  @click="quickGenerateTemplate('all_or')"
-                >
-                  全或
-                </Button>
-                <Button
-                  size="small"
-                  :disabled="isReadonly"
-                  @click="quickGenerateTemplate('grouped')"
-                >
-                  分组模式
-                </Button>
-                <Button
-                  size="small"
-                  danger
-                  :disabled="isReadonly || !customExpression"
-                  @click="clearExpression"
-                >
-                  清空
-                </Button>
-              </Space>
-            </div>
 
             <!-- 表达式输入 -->
             <div class="mb-4">
@@ -927,7 +886,7 @@ defineExpose({
             </div>
 
             <!-- 快捷插入按钮 -->
-            <div class="mb-4">
+            <div v-if="conditions.length > 0" class="mb-4">
               <label class="mb-2 block text-sm text-gray-600">快捷插入</label>
               <div class="space-y-2">
                 <!-- 条件按钮 -->
@@ -988,7 +947,7 @@ defineExpose({
             </div>
 
             <!-- 校验提示 -->
-            <div class="mb-2">
+            <div v-if="conditions.length > 0" class="mb-2">
               <label class="mb-2 block text-sm text-gray-600">校验结果</label>
               <div class="rounded p-3 text-sm" :class="
                 validateCustomLogic().valid ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'
@@ -1000,6 +959,85 @@ defineExpose({
                   ✗ {{ validateCustomLogic().message }}
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 规则条件 -->
+      <div class="mb-6">
+        <div class="mb-4 font-medium">规则条件</div>
+        <div v-if="!isReadonly" class="mb-4">
+          <Button type="primary" @click="addCondition" block>
+            + 添加条件
+          </Button>
+        </div>
+
+        <div
+          v-if="conditions.length === 0"
+          class="py-8 text-center text-gray-500"
+        >
+          暂无条件，请点击上方按钮添加条件
+        </div>
+
+        <div v-else>
+          <div
+            v-for="(condition, index) in conditions"
+            :key="condition.id"
+            class="mb-4 rounded-lg border p-4"
+          >
+            <!-- 使用 flex 布局让 label 和 input 在同一行 -->
+            <div class="mb-4 flex flex-wrap items-center gap-4">
+              <div class="flex min-w-[200px] flex-1 items-center gap-2">
+                <label class="shrink-0 text-sm text-gray-600">
+                  {{ condition.conditionKey }}
+                  <span class="text-red-500">*</span>
+                </label>
+                <Input
+                  v-model:value="condition.conditionName"
+                  placeholder="请输入条件名称"
+                  class="flex-1"
+                  :class="{ 'border-red-500': !condition.conditionName?.trim() && !isReadonly }"
+                  :disabled="isReadonly"
+                />
+              </div>
+              <div class="flex min-w-[150px] flex-1 items-center gap-2">
+                <label class="shrink-0 text-sm text-gray-600">
+                  字段
+                  <span class="text-red-500">*</span>
+                </label>
+                <Select
+                  v-model:value="condition.fieldName"
+                  :options="fieldOptions"
+                  show-search
+                  :filter-option="filterFieldOptions"
+                  class="flex-1"
+                  :class="{ 'border-red-500': !condition.fieldName?.trim() && !isReadonly }"
+                  :disabled="isReadonly"
+                />
+              </div>
+              <div class="flex min-w-[100px] flex-1 items-center gap-2">
+                <label class="shrink-0 text-sm text-gray-600">操作符</label>
+                <Select
+                  v-model:value="condition.operator"
+                  :options="operatorOptions"
+                  class="flex-1"
+                  allow-clear
+                  :disabled="isReadonly"
+                />
+              </div>
+              <div class="flex min-w-[200px] flex-1 items-center gap-2">
+                <label class="shrink-0 text-sm text-gray-600">条件值</label>
+                <Input
+                  v-model:value="condition.conditionValue"
+                  placeholder="请输入条件值"
+                  class="flex-1"
+                  :disabled="isReadonly"
+                />
+              </div>
+              <Button v-if="!isReadonly" danger @click="removeCondition(index)">
+                删除
+              </Button>
             </div>
           </div>
         </div>
