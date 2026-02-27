@@ -38,6 +38,15 @@ const routes: RouteRecordRaw[] = [
           title: '新建规则',
         },
       },
+      {
+        name: 'Field',
+        path: 'field',
+        component: () => import('#/views/rule/field/index.vue'),
+        meta: {
+          icon: 'lucide:database',
+          title: '字段管理',
+        },
+      },
     ],
   },
 ];

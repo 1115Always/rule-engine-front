@@ -200,12 +200,13 @@ defineExpose({
         <template v-else-if="column.key === 'updatedAt'">
           {{ formatDateTime(record.updatedAt) }}
         </template>
+        <template v-else-if="column.key === 'ruleName'">
+          <Button type="link" size="small" @click="handleView(record)">
+            {{ record.ruleName }}
+          </Button>
+        </template>
         <template v-else-if="column.key === 'action'">
           <Space>
-            <Button type="link" size="small" @click="handleView(record)">
-              <IconifyIcon icon="ant-design:eye-outlined" />
-              查看
-            </Button>
             <Button type="link" size="small" @click="handleEdit(record)">
               <IconifyIcon icon="ant-design:edit-outlined" />
               编辑
