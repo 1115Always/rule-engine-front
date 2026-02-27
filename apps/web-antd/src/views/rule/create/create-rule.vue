@@ -87,7 +87,6 @@ const loadFieldOptions = async (params?: {
   fieldName?: string;
 }) => {
   try {
-    console.log(JSON.stringify(params));
     fieldOptions.value = await getFieldOptions(params);
   } catch (error) {
     console.error('获取字段列表失败:', error);
@@ -138,7 +137,6 @@ const handleSave = async (values: any) => {
   };
 
   try {
-    console.log(JSON.stringify(requestData));
     await createRuleApi(requestData);
     message.success('规则创建成功');
     // 关闭当前标签页

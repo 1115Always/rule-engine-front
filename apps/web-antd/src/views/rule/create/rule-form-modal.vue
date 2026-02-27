@@ -524,7 +524,7 @@ defineExpose({
                   placeholder="请输入条件名称"
                   class="flex-1"
                   :disabled="isReadonly"
-                >{{ `条件${condition.conditionKey}` }}</Input>
+                />
               </div>
               <div class="flex min-w-[150px] flex-1 items-center gap-2">
                 <label class="shrink-0 text-sm text-gray-600">字段</label>
