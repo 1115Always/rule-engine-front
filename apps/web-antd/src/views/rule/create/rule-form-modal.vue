@@ -250,7 +250,7 @@ const handleCreateSave = async (values: any) => {
     await modalApi.close();
     resetForm();
   } catch (apiError: any) {
-    message.error(apiError.message || '规则创建失败，请稍后重试');
+    // 错误消息已由全局响应拦截器处理，无需重复显示
     throw apiError;
   }
 };
@@ -294,7 +294,7 @@ const handleEditSave = async (values: any) => {
     await modalApi.close();
     resetForm();
   } catch (apiError: any) {
-    message.error(apiError.message || '规则更新失败，请稍后重试');
+    // 错误消息已由全局响应拦截器处理，无需重复显示
     throw apiError;
   }
 };
