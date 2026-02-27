@@ -35,8 +35,8 @@ interface ConditionItem {
   sortOrder: number;
 }
 
-// 模式类型：create-新增, view-查看, edit-编辑
-type ModalMode = 'create' | 'view' | 'edit';
+// 模式类型：create-新增, edit-编辑
+type ModalMode = 'create' | 'edit';
 
 const emit = defineEmits<{
   success: [];
@@ -59,8 +59,6 @@ const modalTitle = computed(() => {
   switch (modalMode.value) {
     case 'create':
       return '新建规则';
-    case 'view':
-      return '查看规则';
     case 'edit':
       return '编辑规则';
     default:
@@ -68,8 +66,8 @@ const modalTitle = computed(() => {
   }
 });
 
-// 是否只读模式
-const isReadonly = computed(() => modalMode.value === 'view');
+// 是否只读模式（统一为编辑模式，无只读）
+const isReadonly = computed(() => false);
 
 // 表单数据
 const formModel = reactive({
@@ -103,6 +101,23 @@ const conditions = ref<ConditionItem[]>([]);
 
 // 动作类型选项
 const actionTypeOptions = ref<any[]>([]);
+
+// 动作类型选项映射（用于翻译）
+const actionTypeMap = computed(() => {
+  const map = new Map<string, string>();
+  actionTypeOptions.value.forEach((item) => {
+    map.set(item.value, item.label);
+  });
+  return map;
+});
+
+// 获取动作类型的中文标签
+const getActionTypeLabel = (actionTypeValue: string) => {
+  if (!actionTypeValue) return [];
+  // 支持逗号分隔的多个动作类型
+  const values = actionTypeValue.split(',');
+  return values.map((val) => actionTypeMap.value.get(val) || val);
+};
 
 // 使用 shallowRef 来存储表单实例
 const FormRef = shallowRef();
@@ -142,7 +157,8 @@ const loadRuleDetail = async (id: number | string) => {
     // 填充表单数据
     formModel.ruleName = detail.ruleName || '';
     formModel.description = detail.description || '';
-    formModel.actionType = detail.actionType ? [detail.actionType] : [];
+    // 处理动作类型（支持逗号分隔的多个值）
+    formModel.actionType = detail.actionType ? detail.actionType.split(',') : [];
     formModel.actionParam = detail.actionParam || '';
     formModel.conditionRelation = detail.conditionRelation || '';
 
@@ -207,7 +223,7 @@ const handleCreateSave = async (values: any) => {
     rulePackageId: packageInfo.value.id, // 直接使用字符串，避免大整数精度丢失
     ruleName: values.ruleName,
     description: values.description || '',
-    actionType: values.actionType?.[0] || '',
+    actionType: values.actionType?.join(',') || '',
     actionParam: '',
     conditionRelation: values.conditionRelation || '',
     status: 'ACTIVE',
@@ -253,7 +269,7 @@ const handleEditSave = async (values: any) => {
     id: currentRuleId.value,
     ruleName: values.ruleName,
     description: values.description || '',
-    actionType: values.actionType?.[0] || '',
+    actionType: values.actionType?.join(',') || '',
     actionParam: '',
     conditionRelation: values.conditionRelation || '',
     conditions: conditions.value.map((item) => ({
@@ -425,12 +441,6 @@ const [Modal, modalApi] = useVbenModal({
   title: modalTitle,
   class: 'w-[80vw]',
   async onConfirm() {
-    if (modalMode.value === 'view') {
-      // 查看模式直接关闭
-      await modalApi.close();
-      resetForm();
-      return;
-    }
     // 编辑/新增模式执行保存
     await handleSaveClick();
   },
@@ -452,7 +462,6 @@ const open = (
   pkgInfo: { id: string; name: string },
   ruleId?: number | string,
 ) => {
-  console.log('打开对话框:', mode, pkgInfo, ruleId);
   modalMode.value = mode;
   packageInfo.value = pkgInfo;
 
@@ -515,7 +524,7 @@ defineExpose({
                   placeholder="请输入条件名称"
                   class="flex-1"
                   :disabled="isReadonly"
-                />
+                >{{ `条件${condition.conditionKey}` }}</Input>
               </div>
               <div class="flex min-w-[150px] flex-1 items-center gap-2">
                 <label class="shrink-0 text-sm text-gray-600">字段</label>

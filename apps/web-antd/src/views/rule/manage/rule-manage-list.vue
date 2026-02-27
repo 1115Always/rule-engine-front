@@ -12,12 +12,13 @@ import {
   Space,
   Table,
   Tag,
+  Tooltip,
 } from 'ant-design-vue';
 
+import { getActionOptions } from "#/api/rule/action";
 import { deleteRuleApi, getRulesApi } from "#/api/rule/rule";
 
 const emit = defineEmits<{
-  view: [record: any];
   edit: [record: any];
 }>();
 
@@ -79,6 +80,9 @@ const columns = [
 const dataSource = ref<any[]>([]);
 const ruleListResponse = ref<any>(null);
 
+// 动作类型选项映射（用于翻译）
+const actionTypeMap = ref<Map<string, string>>(new Map());
+
 // 分页配置
 const pagination = ref({
   current: 1,
@@ -122,12 +126,7 @@ const loadData = async () => {
   }
 };
 
-// 查看规则
-const handleView = (record: any) => {
-  emit('view', record);
-};
-
-// 编辑规则
+// 编辑规则（点击查看也进入编辑模式）
 const handleEdit = (record: any) => {
   emit('edit', record);
 };
@@ -153,22 +152,58 @@ const handleDelete = (record: any) => {
 
 // 获取状态标签颜色
 const getStatusColor = (status: string) => {
-  return status === 'active' ? 'green' : 'default';
+  return status === 'ACTIVE' ? 'green' : 'default';
 };
 
 // 获取状态文本
 const getStatusText = (status: string) => {
-  return status === 'active' ? '启用' : '禁用';
+  return status === 'ACTIVE' ? '启用' : '禁用';
 };
 
 // 格式化日期时间
 const formatDateTime = (dateTimeStr: string) => {
   if (!dateTimeStr) return '-';
-  return dateTimeStr.replace('T', ' ');
+  // 兼容 ISO 8601 格式 (2026-02-27T13:46:35.713492) 和带微秒的格式
+  return dateTimeStr.replace('T', ' ').replace(/\.\d+$/, '');
+};
+
+// 加载动作类型选项
+const loadActionOptions = async () => {
+  try {
+    const options = await getActionOptions();
+    const map = new Map<string, string>();
+    options.forEach((item) => {
+      map.set(item.value, item.label);
+    });
+    actionTypeMap.value = map;
+  } catch (error) {
+    console.error('获取动作类型选项失败:', error);
+  }
+};
+
+// 获取动作类型的中文标签
+const getActionTypeLabel = (actionTypeValue: string) => {
+  if (!actionTypeValue) return [];
+  // 支持逗号分隔的多个动作类型
+  const values = actionTypeValue.split(',');
+  return values.map((val) => actionTypeMap.value.get(val) || val);
+};
+
+// 获取展示的动作类型（最多3个）
+const getDisplayActionTypes = (actionTypeValue: string) => {
+  const labels = getActionTypeLabel(actionTypeValue);
+  return labels.slice(0, 3);
+};
+
+// 获取剩余的动作类型（用于tooltip）
+const getRemainingActionTypes = (actionTypeValue: string) => {
+  const labels = getActionTypeLabel(actionTypeValue);
+  return labels.slice(3);
 };
 
 //组件挂载时加载数据
 onMounted(() => {
+  loadActionOptions();
   loadData();
 });
 
@@ -201,16 +236,29 @@ defineExpose({
           {{ formatDateTime(record.updatedAt) }}
         </template>
         <template v-else-if="column.key === 'ruleName'">
-          <Button type="link" size="small" @click="handleView(record)">
+          <Button type="link" size="small" @click="handleEdit(record)">
             {{ record.ruleName }}
           </Button>
         </template>
+        <template v-else-if="column.key === 'actionType'">
+          <Space :size="4">
+            <Tag
+              v-for="(label, index) in getDisplayActionTypes(record.actionType)"
+              :key="index"
+              color="blue"
+            >
+              {{ label }}
+            </Tag>
+            <Tooltip
+              v-if="getRemainingActionTypes(record.actionType).length > 0"
+              :title="getRemainingActionTypes(record.actionType).join(', ')"
+            >
+              <Tag color="blue">+{{ getRemainingActionTypes(record.actionType).length }}</Tag>
+            </Tooltip>
+          </Space>
+        </template>
         <template v-else-if="column.key === 'action'">
           <Space>
-            <Button type="link" size="small" @click="handleEdit(record)">
-              <IconifyIcon icon="ant-design:edit-outlined" />
-              编辑
-            </Button>
             <Button
               type="link"
               danger

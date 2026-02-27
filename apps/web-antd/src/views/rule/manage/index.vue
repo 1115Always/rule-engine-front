@@ -24,18 +24,8 @@ const handleAddRule = () => {
   });
 };
 
-// 打开查看规则对话框
-const handleViewRule = (record: any) => {
-  console.log('查看规则:', record);
-  ruleFormModalRef.value?.open('view', {
-    id: packageInfo.value.id,
-    name: packageInfo.value.name,
-  }, record.id);
-};
-
-// 打开编辑规则对话框
+// 打开编辑规则对话框（查看也使用编辑模式）
 const handleEditRule = (record: any) => {
-  console.log('编辑规则:', record);
   ruleFormModalRef.value?.open('edit', {
     id: packageInfo.value.id,
     name: packageInfo.value.name,
@@ -54,7 +44,6 @@ const handleSuccess = () => {
     <RuleManageList
       ref="ruleManageListRef"
       style="height: 665px"
-      @view="handleViewRule"
       @edit="handleEditRule"
     />
     <RuleFormModal ref="ruleFormModalRef" @success="handleSuccess" />
