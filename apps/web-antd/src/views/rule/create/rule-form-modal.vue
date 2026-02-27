@@ -81,9 +81,12 @@ const formModel = reactive({
 // 字段选项
 const fieldOptions = ref<any[]>([]);
 
-// 字段选项过滤函数
+// 字段选项过滤函数（支持label和value的模糊搜索）
 const filterFieldOptions = (input: string, option: any) => {
-  return option.label.toLowerCase().includes(input.toLowerCase());
+  const inputLower = input.toLowerCase();
+  const labelMatch = option.label?.toLowerCase().includes(inputLower);
+  const valueMatch = option.value?.toLowerCase().includes(inputLower);
+  return labelMatch || valueMatch;
 };
 
 // 操作符选项
