@@ -47,6 +47,15 @@ const routes: RouteRecordRaw[] = [
           title: '字段管理',
         },
       },
+      {
+        name: 'HttpTest',
+        path: 'http-test',
+        component: () => import('#/views/rule/http-test/index.vue'),
+        meta: {
+          icon: 'lucide:send',
+          title: '接口测试',
+        },
+      },
     ],
   },
 ];
