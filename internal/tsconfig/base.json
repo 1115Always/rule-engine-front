@@ -4,6 +4,7 @@
   "compilerOptions": {
     "composite": false,
     "target": "ESNext",
+    "ignoreDeprecations": "6.0",
 
     "moduleDetection": "force",
     "experimentalDecorators": true,
