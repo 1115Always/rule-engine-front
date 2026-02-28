@@ -22,12 +22,15 @@ const emit = defineEmits<{
   edit: [record: any];
 }>();
 
+const props = defineProps<{
+  packageName?: string;
+}>();
+
 const route = useRoute();
 
-// 从路由参数获取规则包信息
+// 从props或路由参数获取规则包名称
 const packageInfo = computed(() => ({
-  id: route.query.packageId as string,
-  name: route.query.packageName as string,
+  name: props.packageName || (route.query.packageName as string) || '',
 }));
 
 //表格列定义

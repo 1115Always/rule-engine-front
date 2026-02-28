@@ -8,15 +8,21 @@ import { Button, Card, Space, Tag } from 'ant-design-vue';
 
 const route = useRoute();
 
-const emit = defineEmits<{
-  add: [];
+const props = defineProps<{
+  packageName?: string;
+  scenes?: string[];
+  showBack?: boolean;
 }>();
 
-// 从路由参数获取规则包信息
+const emit = defineEmits<{
+  add: [];
+  back?: [];
+}>();
+
+// 从props或路由参数获取规则包信息
 const packageInfo = computed(() => ({
-  id: route.query.packageId as string,
-  name: route.query.packageName as string,
-  scenes: JSON.parse((route.query.scenes as string) || '[]'),
+  name: props.packageName || (route.query.packageName as string) || '',
+  scenes: props.scenes || JSON.parse((route.query.scenes as string) || '[]'),
 }));
 
 //场显示相关
@@ -47,7 +53,7 @@ const getScenesDisplayText = () => {
 };
 
 const handleBack = () => {
-  window.history.back();
+  emit('back');
 };
 
 const handleAddRule = () => {

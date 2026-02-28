@@ -16,7 +16,7 @@ export async function getUserInfoApi() {
     createTime: '2023-01-01T00:00:00Z',
     lastLoginTime: '2023-12-01T10:00:00Z',
     desc: 'Administrator',
-    homePath: '/rule/package',
+    homePath: '/rule/manage',
     token: 'mock-token',
     realName: 'Administrator',
     userId: '1',

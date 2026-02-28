@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import { IconifyIcon } from "@vben/icons";
-import { useRouter } from "vue-router";
 
 import { Card, Space, Tag, Tooltip } from "ant-design-vue";
-
-const router = useRouter();
 
 const emit = defineEmits<{
   edit: [rulePackage: any];
   delete: [rulePackage: any];
+  click: [rulePackage: any];
 }>();
 
 defineProps<{ list: any[] }>();
@@ -31,14 +29,7 @@ const getRemainingScenes = (scenes: string[]) => {
 
 
 const handleCardClick = (item: any) => {
-  router.push({
-    path: "/rule/manage",
-    query: {
-      packageId: item.id,
-      packageName: item.name,
-      scenes: JSON.stringify(item.scenes || [])
-    }
-  });
+  emit('click', item);
 };
 
 const handleActionClick = (event: MouseEvent, action: string, item: any) => {

@@ -36,11 +36,16 @@ const handleEditRule = (record: any) => {
 const handleSuccess = () => {
   ruleManageListRef.value?.loadData();
 };
+
+// 返回上一页
+const handleBack = () => {
+  window.history.back();
+};
 </script>
 
 <template>
   <div class="flex flex-col gap-4 p-4">
-    <RuleManageHeader @add="handleAddRule" />
+    <RuleManageHeader @add="handleAddRule" @back="handleBack" />
     <RuleManageList
       ref="ruleManageListRef"
       style="height: 665px"
