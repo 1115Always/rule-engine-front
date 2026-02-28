@@ -18,6 +18,8 @@ export interface QueryFieldParams {
   fieldCode?: string;
   /** 字段名称（模糊匹配） */
   fieldName?: string;
+  /** 场景编码（精确匹配），查询该场景关联的字段 */
+  sceneCode?: string;
 }
 
 /**
