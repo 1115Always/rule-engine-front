@@ -58,6 +58,9 @@ const packageInfo = ref({
 // 当前规则ID（编辑/查看模式使用）
 const currentRuleId = ref<number | string | null>(null);
 
+// 当前规则状态（用于控制只读模式）
+const currentRuleStatus = ref<string>('');
+
 // 当前模式
 const modalMode = ref<ModalMode>('create');
 
@@ -73,8 +76,8 @@ const modalTitle = computed(() => {
   }
 });
 
-// 是否只读模式（统一为编辑模式，无只读）
-const isReadonly = computed(() => false);
+// 是否只读模式（ACTIVE 状态时为只读）
+const isReadonly = computed(() => currentRuleStatus.value === 'ACTIVE');
 
 // 逻辑关系类型
 type LogicRelationType = 'ALL_AND' | 'ALL_OR' | 'CUSTOM';
@@ -411,6 +414,8 @@ const loadRuleDetail = async (id: number | string) => {
   loading.value = true;
   try {
     const detail = await getRuleDetailApi(id);
+    // 保存规则状态（ACTIVE 状态时为只读）
+    currentRuleStatus.value = detail.status || '';
     // 填充表单数据
     formModel.ruleName = detail.ruleName || '';
     formModel.description = detail.description || '';
@@ -477,6 +482,7 @@ const resetForm = () => {
   formModel.conditionRelation = '';
   conditions.value = [];
   currentRuleId.value = null;
+  currentRuleStatus.value = '';
   logicRelationType.value = 'ALL_AND';
   customExpression.value = '';
 
@@ -701,10 +707,13 @@ watch(
   { immediate: true },
 );
 
-// 监听只读状态变化，更新表单
+// 监听只读状态变化，更新表单和Modal
 watch(
   () => isReadonly.value,
-  () => {
+  (readonly) => {
+    // 更新Modal的确认按钮显示
+    modalApi.setState({ showConfirmButton: !readonly });
+    
     initializeForm();
     // 重新设置表单值
     nextTick(() => {
