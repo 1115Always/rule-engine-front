@@ -28,19 +28,19 @@ interface RuleListResponse {
  * 分页查询规则列表
  * @param params 查询参数
  * @param params.page 页码，默认1
- * @param params.pageSize每页条数，默认20
- * @param params.ruleName规则名（模糊匹配）
- * @param params.packageName规则包名（模糊匹配）
- * @param params.sceneName场名（模糊匹配）
+ * @param params.pageSize 每页条数，默认20
+ * @param params.ruleName 规则名（模糊匹配）
+ * @param params.packageName 规则包名（模糊匹配）
+ * @param params.sceneCode 场景编码（精确匹配）
  */
 export async function getRulesApi(params?: {
   page?: number;
   pageSize?: number;
   ruleName?: string;
   packageName?: string;
-  sceneName?: string;
+  sceneCode?: string;
 }): Promise<RuleListResponse> {
-  const { page = 1, pageSize = 20, ruleName, packageName, sceneName } = params || {};
+  const { page = 1, pageSize = 20, ruleName, packageName, sceneCode } = params || {};
 
   //构建查询参数
   const queryParams = new URLSearchParams();
@@ -55,8 +55,8 @@ export async function getRulesApi(params?: {
     queryParams.append("packageName", packageName);
   }
 
-  if (sceneName) {
-    queryParams.append("sceneName", sceneName);
+  if (sceneCode) {
+    queryParams.append("sceneCode", sceneCode);
   }
 
   const response = await requestClient.get<RuleListResponse>(

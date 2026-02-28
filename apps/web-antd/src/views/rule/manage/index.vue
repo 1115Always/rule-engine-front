@@ -49,6 +49,7 @@ const handleBack = () => {
     <RuleManageList
       ref="ruleManageListRef"
       style="height: 665px"
+      :show-search="false"
       @edit="handleEditRule"
     />
     <RuleFormModal ref="ruleFormModalRef" @success="handleSuccess" />

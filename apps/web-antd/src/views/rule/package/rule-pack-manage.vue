@@ -162,6 +162,7 @@ const handleRuleSuccess = () => {
         ref="ruleManageListRef"
         style="height: 665px"
         :package-name="currentPackage?.name || ''"
+        :show-search="false"
         @edit="handleEditRule"
       />
       <RuleFormModal ref="ruleFormModalRef" @success="handleRuleSuccess" />

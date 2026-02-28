@@ -9,6 +9,7 @@ import {
   Card,
   message,
   Modal,
+  Select,
   Space,
   Table,
   Tag,
@@ -17,16 +18,28 @@ import {
 
 import { getActionOptions } from "#/api/rule/action";
 import { deleteRuleApi, getRulesApi, updateRuleStatusApi } from "#/api/rule/rule";
+import { getSceneOptionsApi } from "#/api/rule/scene";
 
 const emit = defineEmits<{
   edit: [record: any];
+  search?: [params: { ruleName?: string; packageName?: string; sceneCode?: string }];
 }>();
 
 const props = defineProps<{
   packageName?: string;
+  ruleName?: string;
+  sceneCode?: string;
+  showSearch?: boolean;
 }>();
 
 const route = useRoute();
+
+// 内部查询参数
+const searchParams = ref({
+  ruleName: '',
+  packageName: '',
+  sceneCode: '',
+});
 
 // 从props或路由参数获取规则包名称
 const packageInfo = computed(() => ({
@@ -40,6 +53,12 @@ const columns = [
     dataIndex: 'ruleName',
     key: 'ruleName',
     width: 200,
+  },
+  {
+    title: '规则包',
+    dataIndex: 'packageName',
+    key: 'packageName',
+    width: 120,
   },
   {
     title: '动作类型',
@@ -81,6 +100,9 @@ const ruleListResponse = ref<any>(null);
 // 动作类型选项映射（用于翻译）
 const actionTypeMap = ref<Map<string, string>>(new Map());
 
+// 场景选项
+const sceneOptions = ref<Array<{ label: string; value: string }>>([]);
+
 // 分页配置
 const pagination = ref({
   current: 1,
@@ -108,7 +130,9 @@ const loadData = async () => {
     const response = await getRulesApi({
       page: pagination.value.current,
       pageSize: pagination.value.pageSize,
-      packageName: packageInfo.value.name
+      packageName: searchParams.value.packageName || packageInfo.value.name || undefined,
+      ruleName: searchParams.value.ruleName || undefined,
+      sceneCode: searchParams.value.sceneCode || undefined,
     });
 
     ruleListResponse.value = response;
@@ -122,6 +146,23 @@ const loadData = async () => {
   } finally {
     loading.value = false;
   }
+};
+
+// 搜索
+const handleSearch = () => {
+  pagination.value.current = 1;
+  loadData();
+};
+
+// 重置搜索
+const handleReset = () => {
+  searchParams.value = {
+    ruleName: '',
+    packageName: '',
+    sceneCode: '',
+  };
+  pagination.value.current = 1;
+  loadData();
 };
 
 // 编辑规则（点击查看也进入编辑模式）
@@ -192,6 +233,15 @@ const loadActionOptions = async () => {
   }
 };
 
+// 加载场景选项
+const loadSceneOptions = async () => {
+  try {
+    sceneOptions.value = await getSceneOptionsApi();
+  } catch (error) {
+    console.error('获取场景选项失败:', error);
+  }
+};
+
 // 获取动作类型的中文标签
 const getActionTypeLabel = (actionTypeValue: string) => {
   if (!actionTypeValue) return [];
@@ -215,6 +265,7 @@ const getRemainingActionTypes = (actionTypeValue: string) => {
 //组件挂载时加载数据
 onMounted(() => {
   loadActionOptions();
+  loadSceneOptions();
   loadData();
 });
 
@@ -226,12 +277,56 @@ defineExpose({
 
 <template>
   <Card title="规则列表">
+    <!-- 搜索区域 -->
+    <div v-if="showSearch !== false" class="mb-4 flex flex-wrap items-center gap-4">
+      <div class="flex items-center gap-2">
+        <span class="text-sm text-gray-500">规则名称:</span>
+        <input
+          v-model="searchParams.ruleName"
+          type="text"
+          placeholder="请输入规则名称"
+          class="h-8 w-40 rounded border border-gray-300 px-2 text-sm focus:border-blue-500 focus:outline-none"
+          @keyup.enter="handleSearch"
+        />
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-sm text-gray-500">规则包:</span>
+        <input
+          v-model="searchParams.packageName"
+          type="text"
+          placeholder="请输入规则包名称"
+          class="h-8 w-40 rounded border border-gray-300 px-2 text-sm focus:border-blue-500 focus:outline-none"
+          @keyup.enter="handleSearch"
+        />
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-sm text-gray-500">场景:</span>
+        <Select
+          v-model:value="searchParams.sceneCode"
+          :options="sceneOptions"
+          placeholder="请选择场景"
+          allow-clear
+          show-search
+          :filter-option="(input: string, option: any) => option.label.toLowerCase().includes(input.toLowerCase())"
+          style="width: 160px"
+        />
+      </div>
+      <div class="flex gap-2">
+        <Button type="primary" @click="handleSearch">
+          查询
+        </Button>
+        <Button @click="handleReset">
+          重置
+        </Button>
+      </div>
+    </div>
+
     <Table
       :columns="columns"
       :data-source="dataSource"
       :pagination="pagination"
       :loading="loading"
-      :scroll="{ x: 1200 }"
+      :scroll="{ x: 1400 }"
       @change="handleTableChange"
     >
       <template #bodyCell="{ column, record }">
@@ -245,6 +340,9 @@ defineExpose({
           <Button type="link" size="small" @click="handleEdit(record)">
             {{ record.ruleName }}
           </Button>
+        </template>
+        <template v-else-if="column.key === 'packageName'">
+          <Tag color="green">{{ record.packageName }}</Tag>
         </template>
         <template v-else-if="column.key === 'actionType'">
           <Space :size="4">
