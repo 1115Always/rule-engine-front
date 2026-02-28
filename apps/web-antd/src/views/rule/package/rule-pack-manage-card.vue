@@ -6,6 +6,10 @@ import { Card, Space, Tag, Tooltip } from "ant-design-vue";
 
 const router = useRouter();
 
+const emit = defineEmits<{
+  edit: [rulePackage: any];
+}>();
+
 defineProps<{ list: any[] }>();
 
 const MAX_DISPLAY_SCENES = 2; // 最多显示的场景数量
@@ -38,6 +42,12 @@ const handleCardClick = (item: any) => {
 
 const handleActionClick = (event: MouseEvent, action: string, item: any) => {
   event.stopPropagation();
+  
+  if (action === 'edit') {
+    emit('edit', item);
+    return;
+  }
+  
   // TODO: 根据action类型执行相应操作
   console.log(action, item);
 };

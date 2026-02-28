@@ -4,6 +4,7 @@ interface RulePackage {
   createTime?: string;
   id: string; // 大整数ID，使用字符串类型避免精度丢失
   name: string;
+  description?: string;
   ruleCount?: number;
   scenes: string[];
   status?: "active" | "inactive";
@@ -65,6 +66,7 @@ export async function getRulePackagesApi(params?: {
   return response.records.map((record) => ({
     id: record.id,
     name: record.packageName,
+    description: record.description,
     scenes: record.scenes,
     ruleCount: record.ruleCount,
     status: record.status.toLowerCase() as "active" | "inactive",
@@ -100,6 +102,25 @@ interface RulePackageCreateResponse {
 export async function createRulePackageApi(data: CreateRulePackageRequest): Promise<RulePackageCreateResponse> {
   return await requestClient.post<RulePackageCreateResponse>(
     "/rulePackage/create",
+    data
+  );
+}
+
+interface UpdateRulePackageRequest {
+  id: string;
+  packageName?: string;
+  description?: string;
+  status?: "ACTIVE" | "INACTIVE";
+  scenes?: string[];
+}
+
+/**
+ * 更新规则包
+ * @param data 更新规则包的数据
+ */
+export async function updateRulePackageApi(data: UpdateRulePackageRequest): Promise<void> {
+  return await requestClient.put<void>(
+    "/rulePackage/update",
     data
   );
 }

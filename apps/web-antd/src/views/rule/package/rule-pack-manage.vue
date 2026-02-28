@@ -45,7 +45,12 @@ onMounted(async () => {
 });
 
 const onAdd = () => {
-  addRulePackageRef.value?.open();
+  addRulePackageRef.value?.open('create');
+};
+
+// 编辑规则包
+const onEdit = (rulePackage: RulePackage) => {
+  addRulePackageRef.value?.open('edit', rulePackage);
 };
 
 const onSearch = (data: { name?: string; scenes?: string }) => {
@@ -70,7 +75,7 @@ const onCreateSuccess = () => {
       :scene-options="sceneOptions"
     />
 
-    <RulePackManageCard :list="rulePackages" />
+    <RulePackManageCard :list="rulePackages" @edit="onEdit" />
 
     <AddRulePackage ref="addRulePackageRef" @success="onCreateSuccess" />
   </div>
