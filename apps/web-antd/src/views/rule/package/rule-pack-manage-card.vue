@@ -8,6 +8,7 @@ const router = useRouter();
 
 const emit = defineEmits<{
   edit: [rulePackage: any];
+  delete: [rulePackage: any];
 }>();
 
 defineProps<{ list: any[] }>();
@@ -45,6 +46,11 @@ const handleActionClick = (event: MouseEvent, action: string, item: any) => {
   
   if (action === 'edit') {
     emit('edit', item);
+    return;
+  }
+  
+  if (action === 'delete') {
+    emit('delete', item);
     return;
   }
   

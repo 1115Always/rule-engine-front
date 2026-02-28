@@ -124,3 +124,11 @@ export async function updateRulePackageApi(data: UpdateRulePackageRequest): Prom
     data
   );
 }
+
+/**
+ * 删除规则包
+ * @param id 规则包ID
+ */
+export async function deleteRulePackageApi(id: string): Promise<void> {
+  return await requestClient.delete<void>(`/rulePackage/${id}`);
+}

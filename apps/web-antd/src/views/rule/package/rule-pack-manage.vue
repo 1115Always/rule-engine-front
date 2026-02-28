@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 
-import { getRulePackagesApi } from '#/api/rule/rule-package';
+import { Modal, message } from 'ant-design-vue';
+
+import { deleteRulePackageApi, getRulePackagesApi } from '#/api/rule/rule-package';
 import { getSceneOptionsApi } from '#/api/rule/scene';
 
 import AddRulePackage from './add-rule-package.vue';
@@ -65,6 +67,28 @@ const onCreateSuccess = () => {
   // 创建成功后刷新规则包列表
   fetchRulePackages({});
 };
+
+// 删除规则包
+const onDelete = (rulePackage: RulePackage) => {
+  Modal.confirm({
+    title: '确认删除',
+    content: `确定要删除规则包"${rulePackage.name}"吗？删除后将无法恢复。`,
+    okText: '删除',
+    okType: 'danger',
+    cancelText: '取消',
+    async onOk() {
+      try {
+        await deleteRulePackageApi(rulePackage.id);
+        message.success('删除成功');
+        // 刷新列表
+        fetchRulePackages({});
+      } catch (error: any) {
+        console.error('删除规则包失败:', error);
+        message.error(error.message || '删除失败');
+      }
+    },
+  });
+};
 </script>
 
 <template>
@@ -75,7 +99,7 @@ const onCreateSuccess = () => {
       :scene-options="sceneOptions"
     />
 
-    <RulePackManageCard :list="rulePackages" @edit="onEdit" />
+    <RulePackManageCard :list="rulePackages" @edit="onEdit" @delete="onDelete" />
 
     <AddRulePackage ref="addRulePackageRef" @success="onCreateSuccess" />
   </div>
