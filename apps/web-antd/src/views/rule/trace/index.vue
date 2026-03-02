@@ -26,6 +26,12 @@ const mergedFact = ref<Record<string, Object>>({});
 // 条件表格列定义
 const conditionColumns = [
   {
+    title: '条件Key',
+    dataIndex: 'conditionKey',
+    key: 'conditionKey',
+    width: 80,
+  },
+  {
     title: '条件名称',
     dataIndex: 'conditionName',
     key: 'conditionName',
@@ -280,6 +286,11 @@ onMounted(() => {
                 {{ traceResult.matched ? '命中' : '未命中' }}
               </Tag>
             </Space>
+          </div>
+          
+          <div v-if="traceResult.conditionRelation" class="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded">
+            <span class="font-medium text-gray-600 dark:text-gray-300">条件关系: </span>
+            <code class="ml-2 px-2 py-1 bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded text-sm">{{ traceResult.conditionRelation }}</code>
           </div>
           
           <Table
