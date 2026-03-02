@@ -17,6 +17,7 @@ const routes: RouteRecordRaw[] = [
         meta: {
           affixTab: true,
           icon: 'lucide:area-chart',
+          keepAlive: true,
           title: '规则维护',
         },
       },
@@ -35,6 +36,7 @@ const routes: RouteRecordRaw[] = [
         component: () => import('#/views/rule/query/index.vue'),
         meta: {
           icon: 'lucide:search',
+          keepAlive: true,
           title: '规则查询',
         },
       },
@@ -44,6 +46,7 @@ const routes: RouteRecordRaw[] = [
         component: () => import('#/views/rule/trace/index.vue'),
         meta: {
           icon: 'lucide:git-branch',
+          keepAlive: true,
           title: '规则回溯',
         },
       },
@@ -53,6 +56,7 @@ const routes: RouteRecordRaw[] = [
         component: () => import('#/views/rule/field/index.vue'),
         meta: {
           icon: 'lucide:database',
+          keepAlive: true,
           title: '字段管理',
         },
       },
@@ -62,6 +66,7 @@ const routes: RouteRecordRaw[] = [
         component: () => import('#/views/rule/http-test/index.vue'),
         meta: {
           icon: 'lucide:send',
+          keepAlive: true,
           title: '接口测试',
         },
       },
