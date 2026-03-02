@@ -106,3 +106,20 @@ export async function deleteRuleApi(id: number | string) {
 export async function updateRuleStatusApi(id: number | string, status: string) {
   return await requestClient.put("/rule/updateStatus", { id, status });
 }
+
+/**
+ * 根据规则包ID查询规则列表
+ * @param packageId 规则包ID
+ */
+export async function getRulesByPackageApi(packageId: number | string) {
+  return await requestClient.get(`/rule/listByPackage/${packageId}`);
+}
+
+/**
+ * 规则回溯接口（单个规则）
+ * @param transactionId match接口的流水号
+ * @param ruleId 需要回溯的规则ID
+ */
+export async function traceRuleApi(params: { transactionId: string; ruleId: number }) {
+  return await requestClient.post("/rule/trace", params);
+}

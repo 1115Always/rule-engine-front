@@ -39,6 +39,15 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        name: 'RuleTrace',
+        path: 'trace',
+        component: () => import('#/views/rule/trace/index.vue'),
+        meta: {
+          icon: 'lucide:git-branch',
+          title: '规则回溯',
+        },
+      },
+      {
         name: 'Field',
         path: 'field',
         component: () => import('#/views/rule/field/index.vue'),
