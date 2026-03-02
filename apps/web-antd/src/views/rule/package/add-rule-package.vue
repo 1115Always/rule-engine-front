@@ -93,7 +93,7 @@ const [Modal, modalApi] = useVbenModal({
       resetForm();
     } catch (error: any) {
       console.error('操作失败:', error);
-      message.error(error.message || '操作失败');
+      // 错误提示由全局拦截器统一处理，无需在此重复提示
     }
   },
   onCancel() {

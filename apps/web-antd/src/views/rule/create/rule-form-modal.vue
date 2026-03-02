@@ -356,7 +356,7 @@ const loadActionOptions = async () => {
     actionTypeOptions.value = await getActionOptions();
   } catch (error) {
     console.error('获取动作类型失败:', error);
-    message.error('获取动作类型失败');
+    // 错误提示由全局拦截器统一处理，无需在此重复提示
   }
 };
 
@@ -369,7 +369,7 @@ const loadFieldOptions = async (params?: {
     fieldOptions.value = await getFieldOptions(params);
   } catch (error) {
     console.error('获取字段列表失败:', error);
-    message.error('获取字段列表失败');
+    // 错误提示由全局拦截器统一处理，无需在此重复提示
   }
 };
 
@@ -467,7 +467,7 @@ const loadRuleDetail = async (id: number | string) => {
     });
   } catch (error) {
     console.error('获取规则详情失败:', error);
-    message.error('获取规则详情失败');
+    // 错误提示由全局拦截器统一处理，无需在此重复提示
   } finally {
     loading.value = false;
   }

@@ -89,7 +89,7 @@ const loadData = async () => {
     dataSource.value = response;
   } catch (error) {
     console.error('获取字段列表失败:', error);
-    message.error('获取字段列表失败');
+    // 错误提示由全局拦截器统一处理，无需在此重复提示
   } finally {
     loading.value = false;
   }

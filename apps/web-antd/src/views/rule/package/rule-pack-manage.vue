@@ -93,7 +93,7 @@ const onDelete = (rulePackage: RulePackage) => {
         fetchRulePackages({});
       } catch (error: any) {
         console.error('删除规则包失败:', error);
-        message.error(error.message || '删除失败');
+        // 错误提示由全局拦截器统一处理，无需在此重复提示
       }
     },
   });

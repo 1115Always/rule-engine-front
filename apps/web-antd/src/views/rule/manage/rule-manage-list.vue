@@ -142,7 +142,7 @@ const loadData = async () => {
     pagination.value.pageSize = response.size;
   } catch (error) {
     console.error('获取规则列表失败:', error);
-    message.error('获取规则列表失败');
+    // 错误提示由全局拦截器统一处理，无需在此重复提示
   } finally {
     loading.value = false;
   }
@@ -189,7 +189,7 @@ const handleDelete = (record: any) => {
         loadData();
       } catch (error) {
         console.error('删除规则失败:', error);
-        message.error('删除规则失败');
+        // 错误提示由全局拦截器统一处理，无需在此重复提示
       }
     },
   });
@@ -208,7 +208,7 @@ const handleToggleStatus = async (record: any) => {
     loadData();
   } catch (error) {
     console.error(`${actionText}失败:`, error);
-    message.error(`${actionText}失败`);
+    // 错误提示由全局拦截器统一处理，无需在此重复提示
   }
 };
 
