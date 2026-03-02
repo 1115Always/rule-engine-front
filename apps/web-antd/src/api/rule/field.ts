@@ -22,6 +22,24 @@ export interface QueryFieldParams {
   sceneCode?: string;
 }
 
+/** 创建字段参数 */
+export interface CreateFieldParams {
+  /** 字段编码 */
+  fieldCode: string;
+  /** 字段名称 */
+  fieldName: string;
+  /** 描述 */
+  description?: string;
+  /** 字段类型 */
+  fieldType: string;
+  /** 数据类型 */
+  dataType: string;
+  /** 默认值 */
+  defaultValue?: string;
+  /** 状态 */
+  status?: string;
+}
+
 /**
  * 查询字段列表
  * @param params 查询参数
@@ -45,4 +63,13 @@ export async function getFieldOptions(params?: QueryFieldParams) {
       label: item.fieldName,
       value: item.fieldCode,
     }));
+}
+
+/**
+ * 创建字段
+ * @param data 创建字段参数
+ * @returns 创建后的字段
+ */
+export async function createFieldApi(data: CreateFieldParams) {
+  return await requestClient.post<FieldOption>('/field/create', data);
 }

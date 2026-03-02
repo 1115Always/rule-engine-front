@@ -15,6 +15,8 @@ import {
 import { queryFieldList, type FieldOption } from '#/api/rule/field';
 import { getSceneOptionsApi } from '#/api/rule/scene';
 
+import AddFieldModal from './add-field-modal.vue';
+
 // 表格列定义
 const columns = [
   {
@@ -69,6 +71,9 @@ const sceneOptions = ref<Array<{ label: string; value: string }>>([]);
 
 // 加载状态
 const loading = ref(false);
+
+// 新增字段弹窗
+const addFieldModalRef = ref<InstanceType<typeof AddFieldModal> | null>(null);
 
 // 查询参数
 const queryParams = ref({
@@ -129,6 +134,16 @@ const getStatusText = (status: string) => {
   return status === 'ACTIVE' ? '启用' : '禁用';
 };
 
+// 打开新增字段弹窗
+const handleAddField = () => {
+  addFieldModalRef.value?.open();
+};
+
+// 新增字段成功后刷新列表
+const handleAddSuccess = () => {
+  loadData();
+};
+
 // 组件挂载时加载数据
 onMounted(() => {
   loadSceneOptions();
@@ -166,6 +181,7 @@ onMounted(() => {
         />
         <Button type="primary" @click="handleSearch">查询</Button>
         <Button @click="handleReset">重置</Button>
+        <Button type="primary" @click="handleAddField">新增字段</Button>
       </Space>
     </Card>
 
@@ -186,5 +202,8 @@ onMounted(() => {
         </template>
       </Table>
     </Card>
+
+    <!-- 新增字段弹窗 -->
+    <AddFieldModal ref="addFieldModalRef" @success="handleAddSuccess" />
   </div>
 </template>
