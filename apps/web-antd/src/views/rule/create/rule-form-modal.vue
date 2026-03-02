@@ -312,7 +312,7 @@ const filterFieldOptions = (input: string, option: any) => {
 // 操作符选项
 const operatorOptions = [
   { label: '请选择', value: '' },
-  { label: '等于', value: '=' },
+  { label: '等于', value: '==' },
   { label: '不等于', value: '!=' },
   { label: '大于', value: '>' },
   { label: '小于', value: '<' },
@@ -713,7 +713,7 @@ watch(
   (readonly) => {
     // 更新Modal的确认按钮显示
     modalApi.setState({ showConfirmButton: !readonly });
-    
+
     initializeForm();
     // 重新设置表单值
     nextTick(() => {
