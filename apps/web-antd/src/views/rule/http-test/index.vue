@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 import { Button, Card, Input, Select, Textarea, Tag, Spin, Empty } from 'ant-design-vue';
 
@@ -281,6 +281,14 @@ const applyTemplate = (template: typeof urlTemplates[0]) => {
 const getMethodColor = () => {
   return methodColorMap[method.value] || 'default';
 };
+
+// 默认选中"规则匹配"模板
+onMounted(() => {
+  const matchTemplate = urlTemplates.find((t) => t.label === '规则匹配');
+  if (matchTemplate) {
+    applyTemplate(matchTemplate);
+  }
+});
 </script>
 
 <template>
