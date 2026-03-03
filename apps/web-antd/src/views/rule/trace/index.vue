@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 
-import { Button, Card, Col, Collapse, CollapsePanel, Descriptions, DescriptionsItem, Input, message, Row, Select, Space, Spin, Table, Tag, Tooltip } from 'ant-design-vue';
+import { Button, Card, Col, Descriptions, DescriptionsItem, Input, message, Row, Select, Space, Spin, Table, Tag } from 'ant-design-vue';
 
 import { getRulePackagesApi } from '#/api/rule/rule-package';
 import { getRulesByPackageApi, traceRuleApi } from '#/api/rule/rule';
@@ -59,13 +59,13 @@ const conditionColumns = [
     title: '右值(条件值)',
     dataIndex: 'rightValue',
     key: 'rightValue',
-    width: 120,
+    width: 100,
   },
   {
-    title: '实际值',
+    title: '实际计算结果',
     dataIndex: 'actualValue',
     key: 'actualValue',
-    width: 120,
+    width: 140,
   },
   {
     title: '是否命中',
@@ -75,18 +75,29 @@ const conditionColumns = [
   },
 ];
 
+// 格式化实际值
+const formatActualValue = (value: any) => {
+  if (value === null || value === undefined) {
+    return '-';
+  }
+  if (typeof value === 'object') {
+    return JSON.stringify(value);
+  }
+  return String(value);
+};
+
 // Fact差异（合并后新增的字段）
-const factDiff = computed(() => {
+computed(() => {
   const original = originalFact.value || {};
   const merged = mergedFact.value || {};
   const diff: { key: string; original: any; merged: any; isNew: boolean }[] = [];
-  
+
   const allKeys = new Set([...Object.keys(original), ...Object.keys(merged)]);
   allKeys.forEach((key) => {
     const originalValue = original[key];
     const mergedValue = merged[key];
     const isNew = !(key in original);
-    
+
     if (isNew || JSON.stringify(originalValue) !== JSON.stringify(mergedValue)) {
       diff.push({
         key,
@@ -96,10 +107,9 @@ const factDiff = computed(() => {
       });
     }
   });
-  
+
   return diff;
 });
-
 // 加载规则包列表
 const loadPackageList = async () => {
   packageLoading.value = true;
@@ -139,22 +149,22 @@ const handleTrace = async () => {
     message.warning('请输入流水号');
     return;
   }
-  
+
   if (!selectedRuleId.value) {
     message.warning('请选择要回溯的规则');
     return;
   }
-  
+
   loading.value = true;
   traceResult.value = null;
-  
+
   try {
     // 响应格式: { originalFact, mergedFact, traceResult }
     const response = await traceRuleApi({
       transactionId: transactionId.value.trim(),
       ruleId: Number(selectedRuleId.value),
     });
-    
+
     if (response) {
       traceResult.value = response.traceResult;
       originalFact.value = response.originalFact || {};
@@ -287,12 +297,12 @@ onMounted(() => {
               </Tag>
             </Space>
           </div>
-          
+
           <div v-if="traceResult.conditionRelation" class="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded">
             <span class="font-medium text-gray-600 dark:text-gray-300">条件关系: </span>
             <code class="ml-2 px-2 py-1 bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded text-sm">{{ traceResult.conditionRelation }}</code>
           </div>
-          
+
           <Table
             :columns="conditionColumns"
             :data-source="traceResult.conditions"
@@ -326,14 +336,14 @@ onMounted(() => {
                 </Tag>
               </template>
               <template v-else-if="column.dataIndex === 'actualValue'">
-                <Tooltip v-if="record.actualValue !== null && record.actualValue !== undefined" :title="JSON.stringify(record.actualValue)">
-                  {{ String(record.actualValue) }}
-                </Tooltip>
+                <template v-if="record.actualLeftValue !== null && record.actualLeftValue !== undefined">
+                  <span>{{ formatActualValue(record.actualLeftValue) }} {{ record.operator }} {{ formatActualValue(record.actualRightValue) }}</span>
+                </template>
                 <span v-else class="text-gray-400">无</span>
               </template>
             </template>
           </Table>
-          
+
           <div v-if="traceResult.conditions?.some((c: any) => c.remark)" class="mt-4 text-gray-500 text-sm">
             <strong>备注:</strong>
             <ul class="list-disc list-inside">
