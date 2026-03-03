@@ -86,7 +86,7 @@ const urlTemplates = [
       description: '这是一个测试规则',
       actionType: 'printAction',
       actionParam: '{"message":"匹配成功"}',
-      conditionRelation: 'c1 AND c2',
+      conditionRelation: 'c1 && c2',
       status: 'ACTIVE',
       version: 1,
       conditions: [

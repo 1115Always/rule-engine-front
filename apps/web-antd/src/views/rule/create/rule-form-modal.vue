@@ -121,11 +121,11 @@ const generatedConditionRelation = computed(() => {
   const conditionKeys = conditions.value.map((c) => c.conditionKey);
 
   if (logicRelationType.value === 'ALL_AND') {
-    return conditionKeys.join(' AND ');
+    return conditionKeys.join(' && ');
   }
 
   if (logicRelationType.value === 'ALL_OR') {
-    return conditionKeys.join(' OR ');
+    return conditionKeys.join(' || ');
   }
 
   // 自定义模式：返回用户输入的表达式
@@ -135,8 +135,8 @@ const generatedConditionRelation = computed(() => {
 // 解析表达式中的所有token
 const parseExpressionTokens = (expr: string): string[] => {
   if (!expr) return [];
-  // 匹配条件key(c1, c2等)、AND、OR、括号
-  const tokenRegex = /(c\d+|AND|OR|\(|\))/g;
+  // 匹配条件key(c1, c2等)、&&、||、括号
+  const tokenRegex = /(c\d+|&&|\|\||\(|\))/g;
   const tokens: string[] = [];
   let match;
   while ((match = tokenRegex.exec(expr)) !== null) {
@@ -182,7 +182,7 @@ const validateCustomLogic = (): { valid: boolean; message: string; errorPos?: nu
     if (token === '(') {
       parenCount++;
       if (!expectCondition) {
-        return { valid: false, message: '括号前需要操作符(AND/OR)' };
+        return { valid: false, message: '括号前需要操作符(&&/||)' };
       }
       // 左括号后需要条件或另一个左括号
       expectCondition = true;
@@ -196,7 +196,7 @@ const validateCustomLogic = (): { valid: boolean; message: string; errorPos?: nu
       }
       // 右括号后可以跟操作符或右括号
       expectCondition = false;
-    } else if (token === 'AND' || token === 'OR') {
+    } else if (token === '&&' || token === '||') {
       if (expectCondition) {
         return { valid: false, message: `操作符 "${token}" 前缺少条件` };
       }
@@ -204,7 +204,7 @@ const validateCustomLogic = (): { valid: boolean; message: string; errorPos?: nu
     } else {
       // 条件key
       if (!expectCondition) {
-        return { valid: false, message: `条件 "${token}" 前缺少操作符(AND/OR)` };
+        return { valid: false, message: `条件 "${token}" 前缺少操作符(&&/||)` };
       }
       expectCondition = false;
     }
@@ -294,7 +294,7 @@ const quickGenerateTemplate = (type: 'all_and' | 'all_or' | 'custom') => {
   } else if (type === 'custom') {
     logicRelationType.value = 'CUSTOM';
     // 默认生成全且表达式作为基础
-    customExpression.value = keys.join(' AND ');
+    customExpression.value = keys.join(' && ');
   }
 };
 
@@ -386,18 +386,18 @@ const parseConditionRelation = (expression: string) => {
     // 简单表达式，检查是否全且或全或
     const parts = expression.split(/\s+/).filter((p) => p.trim());
     const conditionKeys = parts.filter((p) => p.startsWith('c'));
-    const operators = parts.filter((p) => p === 'AND' || p === 'OR');
+    const operators = parts.filter((p) => p === '&&' || p === '||');
 
-    // 检查是否全是 AND
-    if (operators.length > 0 && operators.every((op) => op === 'AND')) {
+    // 检查是否全是 &&
+    if (operators.length > 0 && operators.every((op) => op === '&&')) {
       const expectedKeys = conditionKeys.map((_, i) => `c${i + 1}`);
       if (JSON.stringify(conditionKeys) === JSON.stringify(expectedKeys)) {
         return { type: 'ALL_AND' as LogicRelationType };
       }
     }
 
-    // 检查是否全是 OR
-    if (operators.length > 0 && operators.every((op) => op === 'OR')) {
+    // 检查是否全是 ||
+    if (operators.length > 0 && operators.every((op) => op === '||')) {
       const expectedKeys = conditionKeys.map((_, i) => `c${i + 1}`);
       if (JSON.stringify(conditionKeys) === JSON.stringify(expectedKeys)) {
         return { type: 'ALL_OR' as LogicRelationType };
@@ -881,13 +881,13 @@ defineExpose({
               <label class="mb-2 block text-sm text-gray-600"
                 >表达式输入
                 <span class="font-normal text-gray-400"
-                  >（支持括号嵌套，如: (c1 AND c2) OR (c3 AND c4)）</span
+                  >（支持括号嵌套，如: (c1 && c2) || (c3 && c4)）</span
                 ></label
               >
               <Input.TextArea
                 ref="expressionInputRef"
                 v-model:value="customExpression"
-                placeholder="请输入条件关系表达式，如：(c1 AND c2) OR c3"
+                placeholder="请输入条件关系表达式，如：(c1 && c2) || c3"
                 :rows="3"
                 :disabled="isReadonly"
                 class="font-mono"
@@ -920,16 +920,16 @@ defineExpose({
                     <Tag
                       color="green"
                       style="cursor: pointer"
-                      @click="insertOperator('AND')"
+                      @click="insertOperator('&&')"
                     >
-                      AND
+                      &&
                     </Tag>
                     <Tag
                       color="orange"
                       style="cursor: pointer"
-                      @click="insertOperator('OR')"
+                      @click="insertOperator('||')"
                     >
-                      OR
+                      ||
                     </Tag>
                   </Space>
                 </div>
