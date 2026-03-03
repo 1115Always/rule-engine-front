@@ -38,34 +38,16 @@ const conditionColumns = [
     width: 120,
   },
   {
-    title: '类型',
-    dataIndex: 'conditionType',
-    key: 'conditionType',
-    width: 80,
+    title: '条件表达式',
+    dataIndex: 'expression',
+    key: 'expression',
+    width: 200,
   },
   {
-    title: '左值(字段)',
-    dataIndex: 'leftValue',
-    key: 'leftValue',
-    width: 100,
-  },
-  {
-    title: '操作符',
-    dataIndex: 'operator',
-    key: 'operator',
-    width: 60,
-  },
-  {
-    title: '右值(条件值)',
-    dataIndex: 'rightValue',
-    key: 'rightValue',
-    width: 100,
-  },
-  {
-    title: '实际计算结果',
-    dataIndex: 'actualValue',
-    key: 'actualValue',
-    width: 140,
+    title: '计算结果',
+    dataIndex: 'computedExpression',
+    key: 'computedExpression',
+    width: 150,
   },
   {
     title: '是否命中',
@@ -74,17 +56,6 @@ const conditionColumns = [
     width: 80,
   },
 ];
-
-// 格式化实际值
-const formatActualValue = (value: any) => {
-  if (value === null || value === undefined) {
-    return '-';
-  }
-  if (typeof value === 'object') {
-    return JSON.stringify(value);
-  }
-  return String(value);
-};
 
 // Fact差异（合并后新增的字段）
 computed(() => {
@@ -316,30 +287,8 @@ onMounted(() => {
                   {{ record.matched ? '命中' : '未命中' }}
                 </Tag>
               </template>
-              <template v-else-if="column.dataIndex === 'conditionType'">
-                <Tag
-                  :color="
-                    record.conditionType === 'EXACT'
-                      ? 'blue'
-                      : record.conditionType === 'RANGE'
-                        ? 'orange'
-                        : 'purple'
-                  "
-                >
-                  {{
-                    record.conditionType === 'EXACT'
-                      ? '精确'
-                      : record.conditionType === 'RANGE'
-                        ? '范围'
-                        : '表达式'
-                  }}
-                </Tag>
-              </template>
-              <template v-else-if="column.dataIndex === 'actualValue'">
-                <template v-if="record.actualLeftValue !== null && record.actualLeftValue !== undefined">
-                  <span>{{ formatActualValue(record.actualLeftValue) }} {{ record.operator }} {{ formatActualValue(record.actualRightValue) }}</span>
-                </template>
-                <span v-else class="text-gray-400">无</span>
+              <template v-else-if="column.dataIndex === 'computedExpression'">
+                <span>{{ record.computedExpression || '-' }}</span>
               </template>
             </template>
           </Table>
