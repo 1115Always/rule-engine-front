@@ -98,13 +98,6 @@ const customExpression = ref('');
 // 表达式输入框引用
 const expressionInputRef = ref<any>(null);
 
-// 逻辑关系类型选项
-const logicRelationTypeOptions = [
-  { label: '全且（所有条件都满足）', value: 'ALL_AND' },
-  { label: '全或（任一条件满足）', value: 'ALL_OR' },
-  { label: '自定义（支持复杂表达式）', value: 'CUSTOM' },
-];
-
 // 可用的条件key列表
 const availableConditionKeys = computed(() =>
   conditions.value.map((c) => c.conditionKey),
@@ -174,8 +167,6 @@ const validateCustomLogic = (): { valid: boolean; message: string; errorPos?: nu
 
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i];
-    const prevToken = i > 0 ? tokens[i - 1] : null;
-    const nextToken = i < tokens.length - 1 ? tokens[i + 1] : null;
 
     if (token === '(') {
       parenCount++;
@@ -332,14 +323,6 @@ const actionTypeMap = computed(() => {
   });
   return map;
 });
-
-// 获取动作类型的中文标签
-const getActionTypeLabel = (actionTypeValue: string) => {
-  if (!actionTypeValue) return [];
-  // 支持逗号分隔的多个动作类型
-  const values = actionTypeValue.split(',');
-  return values.map((val) => actionTypeMap.value.get(val) || val);
-};
 
 // 使用 shallowRef 来存储表单实例
 const FormRef = shallowRef();
