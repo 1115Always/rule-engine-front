@@ -34,11 +34,9 @@ interface ConditionItem {
   id: string;
   conditionKey: string;
   conditionName: string;
-  conditionType: 'EVAL' | 'EXACT' | 'RANGE';
-  fieldName: string;
+  fieldCode: string;
   operator: string;
   conditionValue: string;
-  expression: string;
   sortOrder: number;
 }
 
@@ -430,11 +428,9 @@ const loadRuleDetail = async (id: number | string) => {
         id: `${Date.now()}_${index}`,
         conditionKey: item.conditionKey || `c${index + 1}`,
         conditionName: item.conditionName || '',
-        conditionType: item.conditionType || 'EXACT',
-        fieldName: item.fieldName || '',
-        operator: item.operator || '=',
+        fieldCode: item.fieldCode || '',
+        operator: item.operator || '',
         conditionValue: item.conditionValue || '',
-        expression: item.expression || '',
         sortOrder: item.sortOrder || index,
       }));
     } else {
@@ -505,7 +501,7 @@ const handleCreateSave = async (values: any) => {
       message.error(`条件 ${cond.conditionKey} 的条件名称为必填项`);
       throw new Error('条件名称验证失败');
     }
-    if (!cond.fieldName?.trim()) {
+    if (!cond.fieldCode?.trim()) {
       message.error(`条件 ${cond.conditionKey} 的字段为必填项`);
       throw new Error('条件字段验证失败');
     }
@@ -539,11 +535,9 @@ const handleCreateSave = async (values: any) => {
     conditions: conditions.value.map((item) => ({
       conditionKey: item.conditionKey,
       conditionName: item.conditionName || '',
-      conditionType: item.conditionType,
-      fieldName: item.fieldName || '',
+      fieldCode: item.fieldCode || '',
       operator: item.operator || '',
       conditionValue: item.conditionValue || '',
-      expression: item.expression || '',
       sortOrder: item.sortOrder,
     })),
   };
@@ -579,7 +573,7 @@ const handleEditSave = async (values: any) => {
       message.error(`条件 ${cond.conditionKey} 的条件名称为必填项`);
       throw new Error('条件名称验证失败');
     }
-    if (!cond.fieldName?.trim()) {
+    if (!cond.fieldCode?.trim()) {
       message.error(`条件 ${cond.conditionKey} 的字段为必填项`);
       throw new Error('条件字段验证失败');
     }
@@ -611,11 +605,9 @@ const handleEditSave = async (values: any) => {
     conditions: conditions.value.map((item) => ({
       conditionKey: item.conditionKey,
       conditionName: item.conditionName || '',
-      conditionType: item.conditionType,
-      fieldName: item.fieldName || '',
+      fieldCode: item.fieldCode || '',
       operator: item.operator || '',
       conditionValue: item.conditionValue || '',
-      expression: item.expression || '',
       sortOrder: item.sortOrder,
     })),
   };
@@ -734,11 +726,9 @@ const addCondition = () => {
     id: Date.now().toString(),
     conditionKey,
     conditionName: `条件${conditionKey}`,
-    conditionType: 'EXACT',
-    fieldName: '',
-    operator: '=',
+    fieldCode: '',
+    operator: '',
     conditionValue: '',
-    expression: '',
     sortOrder: conditions.value.length,
   };
   conditions.value.push(newCondition);
@@ -1016,12 +1006,12 @@ defineExpose({
                   <span class="text-red-500">*</span>
                 </label>
                 <Select
-                  v-model:value="condition.fieldName"
+                  v-model:value="condition.fieldCode"
                   :options="fieldOptions"
                   show-search
                   :filter-option="filterFieldOptions"
                   class="flex-1"
-                  :class="{ 'border-red-500': !condition.fieldName?.trim() && !isReadonly }"
+                  :class="{ 'border-red-500': !condition.fieldCode?.trim() && !isReadonly }"
                   :disabled="isReadonly"
                 />
               </div>
