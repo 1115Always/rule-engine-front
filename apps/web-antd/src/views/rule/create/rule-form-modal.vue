@@ -746,12 +746,13 @@ const removeCondition = (index: number) => {
 
 // 保存按钮点击处理
 const handleSaveClick = async () => {
-  // 先触发表单验证
-  const isValid = await formApiRef.value?.validate?.();
-  if (!isValid) {
+  // 执行表单验证，validate() 返回 { valid: boolean, errors: ... }
+  const { valid } = await formApiRef.value?.validate?.();
+  if (!valid) {
+    // 验证失败，不执行提交
     return;
   }
-  // 获取表单值并提交
+  // 验证通过，获取表单值并提交
   const values = await formApiRef.value?.getValues?.();
   await handleSubmit(values);
 };
