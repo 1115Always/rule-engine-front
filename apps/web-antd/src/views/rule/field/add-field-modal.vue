@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
+import { reactive, ref, watch } from 'vue';
 
 import { useVbenModal } from '@vben/common-ui';
 
@@ -16,9 +16,10 @@ const formModel = reactive({
   fieldCode: '',
   fieldName: '',
   description: '',
-  fieldType: 'SYSTEM',
+  fieldType: 'SIMPLE',
   dataType: 'STRING',
   defaultValue: '',
+  fieldPrior: 1,
   status: 'ACTIVE',
 });
 
@@ -68,6 +69,7 @@ const [Modal, modalApi] = useVbenModal({
         fieldType: formModel.fieldType,
         dataType: formModel.dataType,
         defaultValue: formModel.defaultValue.trim() || undefined,
+        fieldPrior: formModel.fieldPrior,
         status: formModel.status,
       });
 
@@ -91,11 +93,24 @@ const resetForm = () => {
   formModel.fieldCode = '';
   formModel.fieldName = '';
   formModel.description = '';
-  formModel.fieldType = 'SIMPLE',
+  formModel.fieldType = 'SIMPLE';
   formModel.dataType = 'STRING';
   formModel.defaultValue = '';
+  formModel.fieldPrior = 1;
   formModel.status = 'ACTIVE';
 };
+
+// 监听字段类型变化，自动设置字段优先级
+watch(
+  () => formModel.fieldType,
+  (newType) => {
+    if (newType === 'SIMPLE') {
+      formModel.fieldPrior = 1;
+    } else {
+      formModel.fieldPrior = 50;
+    }
+  },
+);
 
 /**
  * 对外暴露打开方法
@@ -127,6 +142,15 @@ defineExpose({
           v-model:value="formModel.fieldType"
           :options="fieldTypeOptions"
           placeholder="请选择字段类型"
+        />
+      </FormItem>
+      <FormItem label="字段优先级" name="fieldPrior">
+        <Input
+          v-model:value="formModel.fieldPrior"
+          type="number"
+          placeholder="数字越小优先级越高"
+          :min="1"
+          :max="5000"
         />
       </FormItem>
       <FormItem label="数据类型" name="dataType">

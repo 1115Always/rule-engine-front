@@ -9,6 +9,7 @@ export interface FieldOption {
   fieldType: string;
   dataType: string;
   defaultValue?: string;
+  fieldPrior?: number;
   status: string;
 }
 
@@ -36,6 +37,8 @@ export interface CreateFieldParams {
   dataType: string;
   /** 默认值 */
   defaultValue?: string;
+  /** 字段优先级 */
+  fieldPrior?: number;
   /** 状态 */
   status?: string;
 }

@@ -23,13 +23,15 @@ const columns = [
     title: '字段编码',
     dataIndex: 'fieldCode',
     key: 'fieldCode',
-    width: 150,
+    width: 350,
+    ellipsis: true,
   },
   {
     title: '字段名称',
     dataIndex: 'fieldName',
     key: 'fieldName',
     width: 150,
+    ellipsis: true,
   },
   {
     title: '字段类型',
@@ -47,6 +49,12 @@ const columns = [
     title: '默认值',
     dataIndex: 'defaultValue',
     key: 'defaultValue',
+    width: 120,
+  },
+  {
+    title: '字段优先级',
+    dataIndex: 'fieldPrior',
+    key: 'fieldPrior',
     width: 120,
   },
   {
