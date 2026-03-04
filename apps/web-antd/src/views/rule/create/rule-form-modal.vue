@@ -316,14 +316,13 @@ const conditions = ref<ConditionItem[]>([]);
 const actionTypeOptions = ref<any[]>([]);
 
 // 动作类型选项映射（用于翻译）
-const actionTypeMap = computed(() => {
+computed(() => {
   const map = new Map<string, string>();
   actionTypeOptions.value.forEach((item) => {
     map.set(item.value, item.label);
   });
   return map;
 });
-
 // 使用 shallowRef 来存储表单实例
 const FormRef = shallowRef();
 const formApiRef = ref();
