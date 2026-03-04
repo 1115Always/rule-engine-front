@@ -530,7 +530,7 @@ const handleCreateSave = async (values: any) => {
     actionType: values.actionType?.join(',') || '',
     actionParam: '',
     conditionRelation,
-    status: 'ACTIVE',
+    status: 'INACTIVE',
     version: 1,
     conditions: conditions.value.map((item) => ({
       conditionKey: item.conditionKey,
