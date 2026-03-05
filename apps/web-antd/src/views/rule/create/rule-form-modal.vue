@@ -22,7 +22,7 @@ import {
 
 import { useVbenForm } from '#/adapter/form';
 import { getActionOptions } from '#/api/rule/action';
-import { getFieldOptions } from '#/api/rule/field';
+import { getFieldOptions, queryFieldList, type FieldOption } from '#/api/rule/field';
 import {
   createRuleApi,
   getRuleDetailApi,
@@ -98,9 +98,24 @@ const customExpression = ref('');
 // 表达式输入框引用
 const expressionInputRef = ref<any>(null);
 
-// 可用的条件key列表
+// 可用的条件key列表（按升序排列）
 const availableConditionKeys = computed(() =>
-  conditions.value.map((c) => c.conditionKey),
+  [...conditions.value]
+    .sort((a, b) => {
+      const numA = parseInt(a.conditionKey.substring(1), 10);
+      const numB = parseInt(b.conditionKey.substring(1), 10);
+      return numA - numB;
+    })
+    .map((c) => c.conditionKey),
+);
+
+// 按条件代码升序排列的条件列表（用于界面展示）
+const sortedConditions = computed(() =>
+  [...conditions.value].sort((a, b) => {
+    const numA = parseInt(a.conditionKey.substring(1), 10);
+    const numB = parseInt(b.conditionKey.substring(1), 10);
+    return numA - numB;
+  }),
 );
 
 // 根据逻辑关系类型自动生成条件关系表达式
@@ -109,7 +124,8 @@ const generatedConditionRelation = computed(() => {
     return '';
   }
 
-  const conditionKeys = conditions.value.map((c) => c.conditionKey);
+  // 按条件代码升序排列
+  const conditionKeys = availableConditionKeys.value;
 
   if (logicRelationType.value === 'ALL_AND') {
     return conditionKeys.join(' && ');
@@ -290,6 +306,9 @@ const quickGenerateTemplate = (type: 'all_and' | 'all_or' | 'custom') => {
 // 字段选项
 const fieldOptions = ref<any[]>([]);
 
+// 字段详细信息（包含优先级）
+const fieldDetails = ref<FieldOption[]>([]);
+
 // 字段选项过滤函数（支持label和value的模糊搜索）
 const filterFieldOptions = (input: string, option: any) => {
   const inputLower = input.toLowerCase();
@@ -347,10 +366,292 @@ const loadFieldOptions = async (params?: {
 }) => {
   try {
     fieldOptions.value = await getFieldOptions(params);
+    // 同时加载字段详细信息（包含优先级）
+    fieldDetails.value = await queryFieldList(params);
   } catch (error) {
     console.error('获取字段列表失败:', error);
     // 错误提示由全局拦截器统一处理，无需在此重复提示
   }
+};
+
+// 获取字段优先级（数字越小优先级越高，默认为10000）
+const getFieldPriority = (fieldCode: string): number => {
+  const field = fieldDetails.value.find((f) => f.fieldCode === fieldCode);
+  return field?.fieldPrior ?? 10000;
+};
+
+// ========== 表达式解析和排序相关类型和函数 ==========
+
+// AST 节点类型
+interface ASTConditionNode {
+  type: 'condition';
+  key: string;
+}
+
+interface ASTOperatorNode {
+  type: 'operator';
+  operator: '&&' | '||';
+  operands: ASTNode[]; // 支持多个操作数，便于同级别排序
+}
+
+interface ASTGroupNode {
+  type: 'group';
+  child: ASTNode;
+}
+
+type ASTNode = ASTConditionNode | ASTOperatorNode | ASTGroupNode;
+
+// 解析表达式为 token 列表
+const tokenizeExpression = (expr: string): string[] => {
+  if (!expr) return [];
+  // 匹配条件key(c1, c2等)、&&、||、括号
+  const tokenRegex = /\s*(c\d+|&&|\|\||\(|\))\s*/g;
+  const tokens: string[] = [];
+  let match;
+  while ((match = tokenRegex.exec(expr)) !== null) {
+    const token = match[1].trim();
+    if (token) {
+      tokens.push(token);
+    }
+  }
+  return tokens;
+};
+
+// 将 token 列表解析为 AST
+const parseTokensToAST = (tokens: string[]): ASTNode => {
+  let pos = 0;
+
+  // 解析或表达式 (最低优先级)
+  const parseOrExpression = (): ASTNode => {
+    const operands: ASTNode[] = [parseAndExpression()];
+
+    while (pos < tokens.length && tokens[pos] === '||') {
+      pos++; // 跳过 ||
+      operands.push(parseAndExpression());
+    }
+
+    if (operands.length === 1) {
+      return operands[0];
+    }
+
+    return { type: 'operator', operator: '||', operands };
+  };
+
+  // 解析与表达式
+  const parseAndExpression = (): ASTNode => {
+    const operands: ASTNode[] = [parsePrimary()];
+
+    while (pos < tokens.length && tokens[pos] === '&&') {
+      pos++; // 跳过 &&
+      operands.push(parsePrimary());
+    }
+
+    if (operands.length === 1) {
+      return operands[0];
+    }
+
+    return { type: 'operator', operator: '&&', operands };
+  };
+
+  // 解析基本表达式（条件或括号表达式）
+  const parsePrimary = (): ASTNode => {
+    if (pos >= tokens.length) {
+      // 不应该发生，但作为安全措施
+      return { type: 'condition', key: 'c0' };
+    }
+
+    const token = tokens[pos];
+
+    if (token === '(') {
+      pos++; // 跳过 (
+      const child = parseOrExpression();
+      if (pos < tokens.length && tokens[pos] === ')') {
+        pos++; // 跳过 )
+      }
+      return { type: 'group', child };
+    }
+
+    if (token.startsWith('c')) {
+      pos++;
+      return { type: 'condition', key: token };
+    }
+
+    // 不应该到达这里
+    pos++;
+    return { type: 'condition', key: 'c0' };
+  };
+
+  return parseOrExpression();
+};
+
+// 获取 AST 节点中所有条件的最高优先级（数字越小优先级越高）
+const getHighestPriority = (node: ASTNode): number => {
+  switch (node.type) {
+    case 'condition': {
+      const cond = conditions.value.find((c) => c.conditionKey === node.key);
+      return cond ? getFieldPriority(cond.fieldCode) : 10000;
+    }
+    case 'operator': {
+      let minPriority = 10000;
+      for (const operand of node.operands) {
+        minPriority = Math.min(minPriority, getHighestPriority(operand));
+      }
+      return minPriority;
+    }
+    case 'group':
+      return getHighestPriority(node.child);
+  }
+};
+
+// 递归排序 AST 节点
+// 排序规则：同级别操作数之间按优先级排序，不改变表达式的嵌套结构
+// 规则1：先递归排序所有子节点（内部优先排序）
+// 规则2：同级操作数按其内部最高优先级排序（优先级高的排前面）
+// 例如：((c1 && c2) || (c3 && c4)) && c5，c1-c5 优先级分别为 5,4,3,2,1
+//   - (c1 && c2) 内部排序 -> (c2 && c1)，最高优先级 min(4,5)=4
+//   - (c3 && c4) 内部排序 -> (c4 && c3)，最高优先级 min(2,3)=2
+//   - 同级 group 比较：(c2 && c1) 和 (c4 && c3) -> (c4 && c3) || (c2 && c1)
+//   - 最外层 &&：(c4 && c3) || (c2 && c1) 最高优先级=2，c5 优先级=1
+//     c5 优先级更高，结果 -> c5 && ((c4 && c3) || (c2 && c1))
+const sortASTNode = (node: ASTNode): ASTNode => {
+  switch (node.type) {
+    case 'condition':
+      // 条件节点无需排序
+      return node;
+
+    case 'operator': {
+      // 先递归排序所有操作数
+      const sortedOperands = node.operands.map((op) => sortASTNode(op));
+
+      // 按操作数的最高优先级排序（优先级数字小的排前面）
+      // 无论是 group、condition 还是 operator，统一比较最高优先级
+      sortedOperands.sort((a, b) => {
+        const priorityA = getHighestPriority(a);
+        const priorityB = getHighestPriority(b);
+        return priorityA - priorityB;
+      });
+
+      return { ...node, operands: sortedOperands };
+    }
+
+    case 'group':
+      // 递归排序括号内的内容
+      return { ...node, child: sortASTNode(node.child) };
+  }
+};
+
+// 将 AST 转换回表达式字符串
+const astToExpression = (node: ASTNode): string => {
+  switch (node.type) {
+    case 'condition':
+      return node.key;
+
+    case 'operator': {
+      const op = node.operator;
+      const parts = node.operands.map((operand) => astToExpression(operand));
+      // 注意：括号由 group 节点控制，这里不自动添加括号
+      return parts.join(` ${op} `);
+    }
+
+    case 'group':
+      return `(${astToExpression(node.child)})`;
+  }
+};
+
+// 根据字段优先级对条件进行排序（优先级高的往前排）
+// 并同步更新表达式中的 conditionKey
+const sortConditionsByPriority = () => {
+  if (conditions.value.length === 0) {
+    return;
+  }
+
+  // 获取当前表达式
+  const expression = generatedConditionRelation.value;
+  if (!expression) {
+    // 如果没有表达式（全且/全或模式），按简单排序处理
+    sortConditionsSimple();
+    return;
+  }
+
+  // 解析表达式为 AST
+  const tokens = tokenizeExpression(expression);
+  if (tokens.length === 0) {
+    sortConditionsSimple();
+    return;
+  }
+
+  const ast = parseTokensToAST(tokens);
+
+  // 递归排序 AST
+  const sortedAst = sortASTNode(ast);
+
+  // 从排序后的 AST 重建表达式
+  const sortedExpression = astToExpression(sortedAst);
+
+  // 更新自定义表达式
+  if (logicRelationType.value === 'CUSTOM') {
+    customExpression.value = sortedExpression;
+  }
+
+  // 更新条件列表的 sortOrder（基于表达式中的出现顺序）
+  updateConditionSortOrder(sortedExpression);
+};
+
+// 简单排序（用于全且/全或模式）
+// 只改变表达式中的条件顺序，不改变 c1, c2 等与条件信息的对应关系
+const sortConditionsSimple = () => {
+  // 按字段优先级排序（优先级数字小的在前）
+  const sortedConditions = [...conditions.value].sort((a, b) => {
+    const priorityA = getFieldPriority(a.fieldCode);
+    const priorityB = getFieldPriority(b.fieldCode);
+    return priorityA - priorityB;
+  });
+
+  // 获取排序后的条件 key 列表
+  const sortedKeys = sortedConditions.map((cond) => cond.conditionKey);
+
+  // 更新条件的 sortOrder
+  sortedConditions.forEach((cond, index) => {
+    const originalCond = conditions.value.find((c) => c.conditionKey === cond.conditionKey);
+    if (originalCond) {
+      originalCond.sortOrder = index;
+    }
+  });
+
+  // 根据当前逻辑关系类型生成新的表达式
+  const operator = logicRelationType.value === 'ALL_OR' ? '||' : '&&';
+  const newExpression = sortedKeys.join(` ${operator} `);
+
+  // 切换到自定义模式并设置新的表达式
+  logicRelationType.value = 'CUSTOM';
+  customExpression.value = newExpression;
+};
+
+// 更新条件的 sortOrder（基于表达式中的出现顺序）
+// 注意：不再重新分配 conditionKey，因为排序后的表达式已经是正确的
+const updateConditionSortOrder = (expression: string) => {
+  // 从表达式中提取条件 key 的出现顺序
+  const tokens = tokenizeExpression(expression);
+  const keyOrder: string[] = [];
+  const seenKeys = new Set<string>();
+
+  for (const token of tokens) {
+    if (token.startsWith('c') && !seenKeys.has(token)) {
+      keyOrder.push(token);
+      seenKeys.add(token);
+    }
+  }
+
+  // 创建 key 到排序顺序的映射
+  const keyToOrder = new Map<string, number>();
+  keyOrder.forEach((key, index) => {
+    keyToOrder.set(key, index);
+  });
+
+  // 更新条件的 sortOrder（不重新分配 conditionKey）
+  conditions.value.forEach((cond) => {
+    cond.sortOrder = keyToOrder.get(cond.conditionKey) ?? conditions.value.length;
+  });
 };
 
 // 解析条件关系表达式，推断逻辑关系类型
@@ -448,6 +749,34 @@ const loadRuleDetail = async (id: number | string) => {
     // 错误提示由全局拦截器统一处理，无需在此重复提示
   } finally {
     loading.value = false;
+  }
+};
+
+// 执行优先级排序（支持全且、全或、自定义三种模式）
+const executePrioritySort = () => {
+  if (conditions.value.length === 0) {
+    message.warning('请先添加条件');
+    return;
+  }
+
+  // 检查是否有字段设置了优先级
+  const hasPriority = conditions.value.some(
+    (cond) => getFieldPriority(cond.fieldCode) < 10000,
+  );
+  if (!hasPriority) {
+    message.warning('所有字段均未设置优先级，无法排序');
+    return;
+  }
+
+  // 根据逻辑关系类型执行不同的排序逻辑
+  if (logicRelationType.value === 'ALL_AND' || logicRelationType.value === 'ALL_OR') {
+    // 全且/全或模式：按优先级排序条件列表，然后重新生成表达式
+    sortConditionsSimple();
+    message.success('优先级排序完成');
+  } else {
+    // 自定义模式：解析表达式并递归排序
+    sortConditionsByPriority();
+    message.success('优先级排序完成');
   }
 };
 
@@ -835,6 +1164,14 @@ defineExpose({
               >
                 清空
               </Button>
+              <Button
+                v-if="conditions.length > 0 && !isReadonly"
+                size="small"
+                :disabled="logicRelationType === 'CUSTOM' && !validateCustomLogic().valid"
+                @click="executePrioritySort"
+              >
+                优先级排序
+              </Button>
             </Space>
           </div>
 
@@ -964,7 +1301,7 @@ defineExpose({
 
         <div v-else>
           <div
-            v-for="(condition, index) in conditions"
+            v-for="(condition, index) in sortedConditions"
             :key="condition.id"
             class="mb-4 rounded-lg border p-4"
           >
@@ -1017,7 +1354,7 @@ defineExpose({
                   :disabled="isReadonly"
                 />
               </div>
-              <Button v-if="!isReadonly" danger @click="removeCondition(index)">
+              <Button v-if="!isReadonly" danger @click="removeCondition(conditions.findIndex(c => c.id === condition.id))">
                 删除
               </Button>
             </div>
