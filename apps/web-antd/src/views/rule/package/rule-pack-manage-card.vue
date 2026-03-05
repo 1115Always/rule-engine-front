@@ -51,25 +51,24 @@ const handleActionClick = (event: MouseEvent, action: string, item: any) => {
 </script>
 
 <template>
-  <div class="grid grid-cols-5 gap-4">
+  <div class="card-grid">
     <Card
       v-for="item in list"
       :key="item.id"
       :hoverable="true"
-      class="cursor-pointer"
-      style="max-width: 280px"
+      class="card-item"
       @click="handleCardClick(item)"
     >
       <div class="space-y-3">
         <div class="flex items-center justify-between">
-          <h3 class="text-base font-semibold">{{ item.name }}</h3>
+          <h3 class="text-base font-semibold truncate" :title="item.name">{{ item.name }}</h3>
         </div>
 
         <div>
           <div class="mb-1 text-xs text-gray-500">规则场景</div>
-          <Space :size="4">
+          <Space :size="4" wrap>
             <Tooltip v-for="scene in getDisplayScenes(item.scenes)" :key="scene" :title="scene">
-              <Tag color="blue">{{ scene }}</Tag>
+              <Tag color="blue" class="max-w-[100px] truncate">{{ scene }}</Tag>
             </Tooltip>
             <Tooltip v-if="getRemainingScenes(item.scenes).length > 0"
                      :title="getRemainingScenes(item.scenes).join(', ')">
@@ -135,3 +134,56 @@ const handleActionClick = (event: MouseEvent, action: string, item: any) => {
     </Card>
   </div>
 </template>
+
+<style scoped>
+/* 响应式卡片网格布局 */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+/* 卡片样式 */
+.card-item {
+  cursor: pointer;
+  width: 100%;
+}
+
+/* 大屏适配 - 2k 分辨率及以上 */
+@media (min-width: 1920px) {
+  .card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+  }
+}
+
+/* 4k 分辨率及以上 */
+@media (min-width: 2560px) {
+  .card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+  }
+}
+
+/* 小屏适配 */
+@media (max-width: 1280px) {
+  .card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  .card-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+</style>
