@@ -55,7 +55,7 @@ onMounted(() => {
 });
 
 /**
- * Modal（vben5 官方）
+ * 规则包编辑弹窗
  */
 const [Modal, modalApi] = useVbenModal({
   title: modalTitle,

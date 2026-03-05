@@ -5,9 +5,8 @@ import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { AuthenticationLoginExpiredModal } from '@vben/common-ui';
-import { VBEN_DOC_URL, VBEN_GITHUB_URL } from '@vben/constants';
 import { useWatermark } from '@vben/hooks';
-import { BookOpenText, CircleHelp, SvgGithubIcon } from '@vben/icons';
+import { BookOpenText, CircleHelp } from '@vben/icons';
 import {
   BasicLayout,
   LockScreen,
@@ -25,53 +24,35 @@ import LoginForm from '#/views/_core/authentication/login.vue';
 const notifications = ref<NotificationItem[]>([
   {
     id: 1,
-    avatar: 'https://avatar.vercel.sh/vercel.svg?text=VB',
+    avatar: 'https://avatar.vercel.sh/vercel.svg?text=RE',
     date: '3小时前',
     isRead: true,
-    message: '描述信息描述信息描述信息',
-    title: '收到了 14 份新周报',
+    message: '您有一条新的风控告警待处理',
+    title: '风控告警通知',
   },
   {
     id: 2,
     avatar: 'https://avatar.vercel.sh/1',
     date: '刚刚',
     isRead: false,
-    message: '描述信息描述信息描述信息',
-    title: '朱偏右 回复了你',
+    message: '规则包 "反欺诈规则V2" 已更新',
+    title: '规则更新提醒',
   },
   {
     id: 3,
     avatar: 'https://avatar.vercel.sh/1',
     date: '2024-01-01',
     isRead: false,
-    message: '描述信息描述信息描述信息',
-    title: '曲丽丽 评论了你',
+    message: '系统将于今晚进行例行维护',
+    title: '系统维护通知',
   },
   {
     id: 4,
     avatar: 'https://avatar.vercel.sh/satori',
     date: '1天前',
     isRead: false,
-    message: '描述信息描述信息描述信息',
-    title: '代办提醒',
-  },
-  {
-    id: 5,
-    avatar: 'https://avatar.vercel.sh/satori',
-    date: '1天前',
-    isRead: false,
-    message: '描述信息描述信息描述信息',
-    title: '跳转Workspace示例',
-    link: '/workspace',
-  },
-  {
-    id: 6,
-    avatar: 'https://avatar.vercel.sh/satori',
-    date: '1天前',
-    isRead: false,
-    message: '描述信息描述信息描述信息',
-    title: '跳转外部链接示例',
-    link: 'https://doc.vben.pro',
+    message: '您的密码即将过期，请及时修改',
+    title: '安全提醒',
   },
 ]);
 
@@ -94,7 +75,8 @@ const menus = computed(() => [
   },
   {
     handler: () => {
-      openWindow(VBEN_DOC_URL, {
+      // 打开帮助文档
+      openWindow('/help', {
         target: '_blank',
       });
     },
@@ -103,16 +85,8 @@ const menus = computed(() => [
   },
   {
     handler: () => {
-      openWindow(VBEN_GITHUB_URL, {
-        target: '_blank',
-      });
-    },
-    icon: SvgGithubIcon,
-    text: 'GitHub',
-  },
-  {
-    handler: () => {
-      openWindow(`${VBEN_GITHUB_URL}/issues`, {
+      // 打开问题反馈
+      openWindow('/feedback', {
         target: '_blank',
       });
     },
@@ -176,8 +150,8 @@ watch(
         :avatar
         :menus
         :text="userStore.userInfo?.realName"
-        description="ann.vben@gmail.com"
-        tag-text="Pro"
+        description="rule-engine@example.com"
+        tag-text="风控"
         @logout="handleLogout"
       />
     </template>
