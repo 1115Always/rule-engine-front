@@ -9,7 +9,7 @@ const ruleFormModalRef = ref<InstanceType<typeof RuleFormModal> | null>(null);
 
 // 打开编辑规则对话框
 const handleEditRule = (record: any) => {
-  ruleFormModalRef.value?.open('view', {
+  ruleFormModalRef.value?.open('edit', {
     id: record.rulePackageId,
     name: record.packageName,
   }, record.id);
