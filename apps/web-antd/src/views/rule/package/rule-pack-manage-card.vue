@@ -34,17 +34,17 @@ const handleCardClick = (item: any) => {
 
 const handleActionClick = (event: MouseEvent, action: string, item: any) => {
   event.stopPropagation();
-  
+
   if (action === 'edit') {
     emit('edit', item);
     return;
   }
-  
+
   if (action === 'delete') {
     emit('delete', item);
     return;
   }
-  
+
   // TODO: 根据action类型执行相应操作
   console.log(action, item);
 };
@@ -101,13 +101,6 @@ const handleActionClick = (event: MouseEvent, action: string, item: any) => {
 
       <template #actions>
         <div class="flex items-center justify-around px-2" @click.stop>
-          <Tooltip title="查看">
-            <IconifyIcon
-              icon="ant-design:eye-outlined"
-              class="cursor-pointer text-lg hover:text-blue-500"
-              @click="(e) => handleActionClick(e, 'view', item)"
-            />
-          </Tooltip>
           <Tooltip title="编辑">
             <IconifyIcon
               icon="ant-design:edit-outlined"
@@ -120,13 +113,6 @@ const handleActionClick = (event: MouseEvent, action: string, item: any) => {
               icon="ant-design:delete-outlined"
               class="cursor-pointer text-lg hover:text-red-500"
               @click="(e) => handleActionClick(e, 'delete', item)"
-            />
-          </Tooltip>
-          <Tooltip title="导出">
-            <IconifyIcon
-              icon="ant-design:export-outlined"
-              class="cursor-pointer text-lg hover:text-blue-500"
-              @click="(e) => handleActionClick(e, 'export', item)"
             />
           </Tooltip>
         </div>
