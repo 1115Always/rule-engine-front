@@ -1,13 +1,13 @@
-# 规则引擎风控系统 (Rule Engine Risk Control System)
+# 风控中心 (Rule Engine Risk Control System)
 
 <div align="center">
-  <h1>规则引擎风控系统</h1>
+  <h1>风控中心</h1>
   <p>基于 Vben Admin 开发的高效灵活的风险控制管理平台</p>
 </div>
 
 ## 项目简介
 
-规则引擎风控系统是一款基于 Vue 3、Vite、TypeScript 和 Ant Design Vue 开发的风控管理平台。提供规则管理、规则查询、规则回溯、字段管理等核心功能，帮助企业快速构建和部署风控策略。
+风控中心是一款基于 Vue 3、Vite、TypeScript 和 Ant Design Vue 开发的风控管理平台。提供规则管理、规则查询、规则回溯、字段管理等核心功能，帮助企业快速构建和部署风控策略。
 
 ## 核心功能
 
