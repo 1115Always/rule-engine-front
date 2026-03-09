@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { IconifyIcon } from '@vben/icons';
+import { formatDateTime } from '@vben/utils';
 
 import {
   Button,
@@ -210,13 +211,6 @@ const handleToggleStatus = async (record: any) => {
     console.error(`${actionText}失败:`, error);
     // 错误提示由全局拦截器统一处理，无需在此重复提示
   }
-};
-
-// 格式化日期时间
-const formatDateTime = (dateTimeStr: string) => {
-  if (!dateTimeStr) return '-';
-  // 兼容 ISO 8601 格式 (2026-02-27T13:46:35.713492) 和带微秒的格式
-  return dateTimeStr.replace('T', ' ').replace(/\.\d+$/, '');
 };
 
 // 加载动作类型选项
