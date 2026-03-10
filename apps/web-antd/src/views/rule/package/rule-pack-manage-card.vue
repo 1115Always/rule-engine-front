@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { formatDateTime } from "@vben/utils";
+
 import { IconifyIcon } from "@vben/icons";
 
 import { Card, Space, Tag, Tooltip } from "ant-design-vue";
@@ -26,7 +28,6 @@ const getRemainingScenes = (scenes: string[]) => {
   }
   return scenes.slice(MAX_DISPLAY_SCENES);
 };
-
 
 const handleCardClick = (item: any) => {
   emit('click', item);
@@ -94,8 +95,8 @@ const handleActionClick = (event: MouseEvent, action: string, item: any) => {
         </div>
 
         <div class="text-xs text-gray-400">
-          <div>创建时间：{{ item.createTime || "2024-01-01" }}</div>
-          <div>更新时间：{{ item.updateTime || "2024-01-01" }}</div>
+          <div>创建时间：{{ formatDateTime(item.createTime) }}</div>
+          <div>更新时间：{{ formatDateTime(item.updateTime) }}</div>
         </div>
       </div>
 
