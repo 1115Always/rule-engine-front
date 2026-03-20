@@ -75,11 +75,10 @@ const urlTemplates: UrlTemplate[] = [
     value: '/metric/admin/process',
     method: 'POST',
     body: {
-      "@type": 'org.always.rule.metric.dynamic.entity.Transaction',
+      type: 'Transaction',
       txId: 'TX001',
       userId: 'U1001',
       amount: 150.5,
-      type: 'PURCHASE',
       channel: 'SUCCESS',
       txTime: '2026-03-20T10:30:00',
     },
