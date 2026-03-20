@@ -12,8 +12,6 @@ import {
   Tag,
 } from 'ant-design-vue';
 
-import { formatDateTime } from '@vben/utils';
-
 import {
   deleteEntityApi,
   listEntitiesApi,
@@ -34,6 +32,12 @@ const columns = [
     dataIndex: 'entityName',
     key: 'entityName',
     width: 200,
+  },
+  {
+    title: '字段定义',
+    dataIndex: 'fieldSchema',
+    key: 'fieldSchema',
+    ellipsis: true,
   },
   {
     title: '状态',
@@ -172,12 +176,6 @@ onMounted(() => {
             <Tag :color="getStatusColor(record.status)">
               {{ getStatusText(record.status) }}
             </Tag>
-          </template>
-          <template v-if="column.key === 'createdAt'">
-            {{ formatDateTime(record.createdAt) }}
-          </template>
-          <template v-if="column.key === 'updatedAt'">
-            {{ formatDateTime(record.updatedAt) }}
           </template>
           <template v-if="column.key === 'action'">
             <Space>
