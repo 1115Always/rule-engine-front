@@ -26,6 +26,7 @@ const headers = ref<{ key: string; value: string }[]>([
 ]);
 const body = ref<string>('');
 const bodyType = ref<string>('json');
+const params = ref<{ key: string; value: string }[]>([]);
 
 // 当前标签页
 const activeTab = ref<string>('headers');
@@ -38,100 +39,17 @@ const responseBody = ref<string>('');
 const responseTime = ref<number | null>(null);
 const error = ref<string>('');
 
+// URL 模板类型
+interface UrlTemplate {
+  label: string;
+  value: string;
+  method: string;
+  body?: any | null;
+  params?: Record<string, string>;
+}
+
 // 常用 URL 模板（含示例数据）
-const urlTemplates = [
-  {
-    label: '规则包列表',
-    value: '/rulePackage/page',
-    method: 'GET',
-    body: null,
-  },
-  {
-    label: '创建规则包',
-    value: '/rulePackage/create',
-    method: 'POST',
-    body: {
-      packageName: '测试规则包',
-      description: '这是一个测试规则包',
-      status: 'ACTIVE',
-      version: 1,
-      scenes: ['IN_TRANSFER'],
-    },
-  },
-  {
-    label: '更新规则包',
-    value: '/rulePackage/update',
-    method: 'PUT',
-    body: {
-      id: '3001',
-      packageName: '更新后的规则包名',
-      description: '更新后的描述',
-      status: 'ACTIVE',
-      scenes: ['IN_TRANSFER', 'CROSS_TRANSFER'],
-    },
-  },
-  {
-    label: '规则列表',
-    value: '/rule/page',
-    method: 'GET',
-    body: null,
-  },
-  {
-    label: '创建规则',
-    value: '/rule/create',
-    method: 'POST',
-    body: {
-      rulePackageId: 3001,
-      ruleName: '测试规则',
-      description: '这是一个测试规则',
-      actionType: 'printAction',
-      actionParam: '{"message":"匹配成功"}',
-      conditionRelation: 'c1 && c2',
-      status: 'ACTIVE',
-      version: 1,
-      conditions: [
-        {
-          conditionName: '城市条件',
-          conditionKey: 'c1',
-          conditionType: 'EXACT',
-          fieldName: 'city',
-          operator: '=',
-          conditionValue: 'BJ',
-          sortOrder: 1,
-        },
-        {
-          conditionName: '年龄条件',
-          conditionKey: 'c2',
-          conditionType: 'RANGE',
-          fieldName: 'age',
-          operator: '>=',
-          conditionValue: '18',
-          sortOrder: 2,
-        },
-      ],
-    },
-  },
-  {
-    label: '更新规则状态',
-    value: '/rule/updateStatus',
-    method: 'PUT',
-    body: {
-      id: '1',
-      status: 'INACTIVE',
-    },
-  },
-  {
-    label: '场景列表',
-    value: '/scene/list',
-    method: 'GET',
-    body: null,
-  },
-  {
-    label: '字段列表',
-    value: '/field/list',
-    method: 'GET',
-    body: null,
-  },
+const urlTemplates: UrlTemplate[] = [
   {
     label: '规则匹配',
     value: '/rule/match',
@@ -150,6 +68,30 @@ const urlTemplates = [
         openDate: '2025-06-01 10:00:00',
         userId: '10003',
       },
+    },
+  },
+  {
+    label: '指标数据推送',
+    value: '/metric/admin/process',
+    method: 'POST',
+    body: {
+      "@type": 'org.always.rule.metric.dynamic.entity.Transaction',
+      txId: 'TX001',
+      userId: 'U1001',
+      amount: 150.5,
+      type: 'PURCHASE',
+      channel: 'SUCCESS',
+      txTime: '2026-03-20T10:30:00',
+    },
+  },
+  {
+    label: '指标结果查询',
+    value: '/metric/admin/query',
+    method: 'GET',
+    params: {
+      metricName: 'TransactionCount',
+      dimensionKey: 'SUCCESS',
+      windowSize: '1h',
     },
   },
 ];
@@ -229,6 +171,17 @@ const sendRequest = async () => {
       headers: requestHeaders,
     };
 
+    // 添加请求参数（GET 请求）
+    if (params.value.length > 0) {
+      const queryParams: Record<string, string> = {};
+      params.value.forEach((p) => {
+        if (p.key && p.value) {
+          queryParams[p.key] = p.value;
+        }
+      });
+      config.params = queryParams;
+    }
+
     // 添加请求体
     if (showBody.value && body.value) {
       config.data = bodyType.value === 'json' ? JSON.parse(body.value) : body.value;
@@ -263,17 +216,24 @@ const clearResponse = () => {
 };
 
 // 应用 URL 模板
-const applyTemplate = (template: typeof urlTemplates[0]) => {
+const applyTemplate = (template: UrlTemplate) => {
   url.value = template.value;
   method.value = template.method;
-  
+
+  // 如果有示例请求参数，填充到 params
+  if (template.params) {
+    params.value = Object.entries(template.params).map(([key, value]) => ({ key, value }));
+  } else {
+    params.value = [];
+  }
+
   // 如果有示例请求体，填充到 body
   if (template.body) {
     body.value = JSON.stringify(template.body, null, 2);
     activeTab.value = 'body';
   } else {
     body.value = '';
-    activeTab.value = 'headers';
+    activeTab.value = 'params';
   }
 };
 
@@ -332,6 +292,12 @@ onMounted(() => {
       <div class="mb-2">
         <div class="flex gap-4 border-b border-gray-200">
           <div
+            :class="['pb-2 cursor-pointer', activeTab === 'params' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-500']"
+            @click="activeTab = 'params'"
+          >
+            参数
+          </div>
+          <div
             :class="['pb-2 cursor-pointer', activeTab === 'headers' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-500']"
             @click="activeTab = 'headers'"
           >
@@ -344,6 +310,25 @@ onMounted(() => {
             请求体
           </div>
         </div>
+      </div>
+
+      <!-- 请求参数内容 -->
+      <div v-show="activeTab === 'params'" class="space-y-2">
+        <div
+          v-for="(param, index) in params"
+          :key="index"
+          class="flex gap-2 items-center"
+        >
+          <Input v-model:value="param.key" placeholder="参数名" class="flex-1" />
+          <Input v-model:value="param.value" placeholder="参数值" class="flex-1" />
+          <Button type="text" danger @click="params.splice(index, 1)">
+            <IconifyIcon icon="ant-design:delete-outlined" />
+          </Button>
+        </div>
+        <Button type="dashed" block @click="params.push({ key: '', value: '' })">
+          <IconifyIcon icon="ant-design:plus-outlined" class="mr-1" />
+          添加参数
+        </Button>
       </div>
 
       <!-- 请求头内容 -->
