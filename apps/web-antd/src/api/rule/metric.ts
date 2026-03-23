@@ -85,9 +85,14 @@ export async function validateMetricApi(metricName: string) {
   );
 }
 
-/** 发布指标 */
-export async function publishMetricApi(metricName: string) {
-  return await requestClient.post(`/metric/admin/codes/${metricName}/publish`);
+/** 上线指标 */
+export async function onlineMetricApi(metricName: string) {
+  return await requestClient.post(`/metric/admin/codes/${metricName}/online`);
+}
+
+/** 下线指标 */
+export async function offlineMetricApi(metricName: string) {
+  return await requestClient.post(`/metric/admin/codes/${metricName}/offline`);
 }
 
 /** 全量构建 */

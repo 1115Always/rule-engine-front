@@ -20,7 +20,8 @@ import {
   getEntityOptionsApi,
   listMetricsApi,
   type MetricCode,
-  publishMetricApi,
+  onlineMetricApi,
+  offlineMetricApi,
   validateMetricApi,
 } from '#/api/rule/metric';
 
@@ -132,8 +133,8 @@ const handleEdit = (record: MetricCode) => {
 };
 
 const handleDelete = (record: MetricCode) => {
-  if (record.status === 'PUBLISHED') {
-    message.warning('已发布的指标不能删除，请先下线');
+  if (record.status === 'ONLINE') {
+    message.warning('已上线的指标不能删除，请先下线');
     return;
   }
   Modal.confirm({
@@ -161,17 +162,33 @@ const handleValidate = async (record: MetricCode) => {
   }
 };
 
-const handlePublish = (record: MetricCode) => {
+const handleOnline = (record: MetricCode) => {
   if (record.status !== 'VALIDATED') {
-    message.warning('只有验证通过的指标才能发布');
+    message.warning('只有验证通过的指标才能上线');
     return;
   }
   Modal.confirm({
-    title: '确认发布',
-    content: `确定发布指标「${record.metricName}」吗？`,
+    title: '确认上线',
+    content: `确定上线指标「${record.metricName}」吗？`,
     async onOk() {
-      await publishMetricApi(record.metricName);
-      message.success('发布成功');
+      await onlineMetricApi(record.metricName);
+      message.success('上线成功');
+      loadData();
+    },
+  });
+};
+
+const handleOffline = (record: MetricCode) => {
+  if (record.status !== 'ONLINE') {
+    message.warning('只有已上线的指标才能下线');
+    return;
+  }
+  Modal.confirm({
+    title: '确认下线',
+    content: `确定下线指标「${record.metricName}」吗？下线后需要重新全量构建才能生效。`,
+    async onOk() {
+      await offlineMetricApi(record.metricName);
+      message.success('下线成功');
       loadData();
     },
   });
@@ -194,7 +211,7 @@ const handleModalSuccess = () => {
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case 'PUBLISHED': {
+    case 'ONLINE': {
       return 'green';
     }
     case 'VALIDATED': {
@@ -211,8 +228,8 @@ const getStatusColor = (status: string) => {
 
 const getStatusText = (status: string) => {
   switch (status) {
-    case 'PUBLISHED': {
-      return '已发布';
+    case 'ONLINE': {
+      return '已上线';
     }
     case 'VALIDATED': {
       return '已验证';
@@ -293,12 +310,21 @@ onMounted(() => {
                 验证
               </Button>
               <Button
-                :disabled="record.status !== 'VALIDATED'"
+                v-if="record.status === 'VALIDATED'"
                 size="small"
                 type="link"
-                @click="handlePublish(record)"
+                @click="handleOnline(record)"
               >
-                发布
+                上线
+              </Button>
+              <Button
+                v-else-if="record.status === 'ONLINE'"
+                danger
+                size="small"
+                type="link"
+                @click="handleOffline(record)"
+              >
+                下线
               </Button>
               <Button
                 danger
