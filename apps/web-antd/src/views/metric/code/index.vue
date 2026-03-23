@@ -7,17 +7,15 @@ import {
   Input,
   message,
   Modal,
-  Select,
   Space,
   Table,
   Tag,
-  Tooltip,
 } from 'ant-design-vue';
 
 import {
   buildAllApi,
   deleteMetricApi,
-  getEntityOptionsApi,
+  getMetricApi,
   listMetricsApi,
   type MetricCode,
   onlineMetricApi,
@@ -35,36 +33,16 @@ const columns = [
     width: 200,
   },
   {
-    title: '所属实体',
-    dataIndex: 'entityCode',
-    key: 'entityCode',
-    width: 160,
-  },
-  {
-    title: 'DSL 代码',
-    dataIndex: 'dslCode',
-    key: 'dslCode',
-    ellipsis: true,
-  },
-  {
-    title: 'Redis Pattern',
-    dataIndex: 'redisPattern',
-    key: 'redisPattern',
-    width: 200,
-    ellipsis: true,
-  },
-  {
     title: '状态',
     dataIndex: 'status',
     key: 'status',
     width: 120,
   },
   {
-    title: '编译错误',
-    dataIndex: 'compileError',
-    key: 'compileError',
-    width: 160,
-    ellipsis: true,
+    title: '创建时间',
+    dataIndex: 'createdAt',
+    key: 'createdAt',
+    width: 180,
   },
   {
     title: '更新时间',
@@ -82,16 +60,14 @@ const columns = [
 
 const dataSource = ref<MetricCode[]>([]);
 const loading = ref(false);
-const entityOptions = ref<Array<{ label: string; value: string }>>([]);
-const queryParams = ref({ metricName: '', entityCode: '' });
+const queryParams = ref({ metricName: '' });
 
 const metricModalRef = ref<InstanceType<typeof MetricModal> | null>(null);
 
 const loadData = async () => {
   loading.value = true;
   try {
-    const entityCode = queryParams.value.entityCode || undefined;
-    const list = await listMetricsApi(entityCode);
+    const list = await listMetricsApi();
     dataSource.value = list.filter((item) => {
       const matchName =
         !queryParams.value.metricName ||
@@ -107,20 +83,12 @@ const loadData = async () => {
   }
 };
 
-const loadEntityOptions = async () => {
-  try {
-    entityOptions.value = await getEntityOptionsApi();
-  } catch {
-    console.error('获取实体选项失败');
-  }
-};
-
 const handleSearch = () => {
   loadData();
 };
 
 const handleReset = () => {
-  queryParams.value = { metricName: '', entityCode: '' };
+  queryParams.value = { metricName: '' };
   loadData();
 };
 
@@ -128,8 +96,13 @@ const handleAdd = () => {
   metricModalRef.value?.open('create');
 };
 
-const handleEdit = (record: MetricCode) => {
-  metricModalRef.value?.open('edit', record);
+const handleEdit = async (record: MetricCode) => {
+  try {
+    const detail = await getMetricApi(Number(record.id));
+    metricModalRef.value?.open('edit', detail);
+  } catch {
+    message.error('获取指标详情失败');
+  }
 };
 
 const handleDelete = (record: MetricCode) => {
@@ -244,7 +217,6 @@ const getStatusText = (status: string) => {
 };
 
 onMounted(() => {
-  loadEntityOptions();
   loadData();
 });
 </script>
@@ -253,21 +225,6 @@ onMounted(() => {
   <div class="flex flex-col gap-4 p-4">
     <Card title="指标查询">
       <Space>
-        <div class="flex items-center gap-2">
-          <span class="whitespace-nowrap text-sm text-gray-500">实体:</span>
-          <Select
-            v-model:value="queryParams.entityCode"
-            :options="entityOptions"
-            allow-clear
-            placeholder="请选择实体"
-            show-search
-            :filter-option="
-              (input: string, option: any) =>
-                option.label.toLowerCase().includes(input.toLowerCase())
-            "
-            style="width: 200px"
-          />
-        </div>
         <Input
           v-model:value="queryParams.metricName"
           placeholder="指标名称"
@@ -286,7 +243,7 @@ onMounted(() => {
         :columns="columns"
         :data-source="dataSource"
         :loading="loading"
-        :scroll="{ x: 1400 }"
+        :scroll="{ x: 1000 }"
         row-key="id"
       >
         <template #bodyCell="{ column, record }">
@@ -295,12 +252,7 @@ onMounted(() => {
               {{ getStatusText(record.status) }}
             </Tag>
           </template>
-          <template v-if="column.key === 'compileError'">
-            <Tooltip v-if="record.compileError" :title="record.compileError">
-              <span class="text-red-500">{{ record.compileError }}</span>
-            </Tooltip>
-            <span v-else class="text-gray-400">-</span>
-          </template>
+
           <template v-if="column.key === 'action'">
             <Space>
               <Button size="small" type="link" @click="handleEdit(record)">
@@ -342,7 +294,6 @@ onMounted(() => {
 
     <MetricModal
       ref="metricModalRef"
-      :entity-options="entityOptions"
       @success="handleModalSuccess"
     />
   </div>

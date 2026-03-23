@@ -14,17 +14,14 @@ export interface MetricEntity {
   updatedBy?: string;
 }
 
-/** 指标代码 */
+/** 指标代码列表项（查询接口返回） */
 export interface MetricCode {
   id: string;
   metricName: string;
-  entityCode: string;
-  dslCode: string;
-  redisPattern: string;
+  dslCode?: string;
   status: string;
-  compileError?: string;
   enabled: number;
-  createdAt?: string;
+  createdAt: string;
   createdBy?: string;
   updatedAt?: string;
   updatedBy?: string;
@@ -57,10 +54,13 @@ export async function deleteEntityApi(id: string) {
 }
 
 /** 查询指标列表 */
-export async function listMetricsApi(entityCode?: string) {
-  return await requestClient.get<MetricCode[]>('/metric/admin/codes', {
-    params: entityCode ? { entityCode } : undefined,
-  });
+export async function listMetricsApi() {
+  return await requestClient.get<MetricCode[]>('/metric/admin/codes');
+}
+
+/** 获取指标详情 */
+export async function getMetricApi(id: string) {
+  return await requestClient.get<MetricCode>(`/metric/admin/codes/${id}`);
 }
 
 /** 创建指标 */
