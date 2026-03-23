@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 
+import { formatDateTime } from '@vben/utils';
+
 import {
   Button,
   Card,
@@ -32,12 +34,6 @@ const columns = [
     dataIndex: 'entityName',
     key: 'entityName',
     width: 200,
-  },
-  {
-    title: '字段定义',
-    dataIndex: 'fieldSchema',
-    key: 'fieldSchema',
-    ellipsis: true,
   },
   {
     title: '状态',
@@ -168,16 +164,22 @@ onMounted(() => {
         :columns="columns"
         :data-source="dataSource"
         :loading="loading"
-        :scroll="{ x: 1200 }"
+        :scroll="{ x: 900 }"
         row-key="id"
       >
         <template #bodyCell="{ column, record }">
-          <template v-if="column.key === 'status'">
+          <template v-if="column.key === 'createdAt'">
+            {{ formatDateTime(record.createdAt) }}
+          </template>
+          <template v-else-if="column.key === 'updatedAt'">
+            {{ formatDateTime(record.updatedAt) }}
+          </template>
+          <template v-else-if="column.key === 'status'">
             <Tag :color="getStatusColor(record.status)">
               {{ getStatusText(record.status) }}
             </Tag>
           </template>
-          <template v-if="column.key === 'action'">
+          <template v-else-if="column.key === 'action'">
             <Space>
               <Button size="small" type="link" @click="handleEdit(record)">
                 编辑
