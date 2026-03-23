@@ -125,15 +125,12 @@ const handleDelete = (record: MetricCode) => {
 
 const handleValidate = async (record: MetricCode) => {
   try {
-    const result = await validateMetricApi(record.metricName);
-    if (result.success) {
-      message.success('验证通过');
-    } else {
-      message.error(`验证失败: ${result.error}`);
-    }
+    await validateMetricApi(record.metricName);
+    message.success('验证通过');
     loadData();
-  } catch {
-    console.error('验证失败');
+  } catch (error: any) {
+    const errorMsg = error?.response?.data?.message || error?.message || '验证失败';
+    message.error(`验证失败: ${errorMsg}`);
   }
 };
 

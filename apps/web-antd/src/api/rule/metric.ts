@@ -27,12 +27,6 @@ export interface MetricCode {
   updatedBy?: string;
 }
 
-/** 验证结果 */
-export interface CompileResult {
-  success: boolean;
-  error?: string;
-}
-
 /** 查询实体列表 */
 export async function listEntitiesApi() {
   return await requestClient.get<MetricEntity[]>('/metric/admin/entities');
@@ -80,9 +74,7 @@ export async function deleteMetricApi(id: string) {
 
 /** 验证指标 */
 export async function validateMetricApi(metricName: string) {
-  return await requestClient.post<CompileResult>(
-    `/metric/admin/codes/${metricName}/validate`,
-  );
+  return await requestClient.post(`/metric/admin/codes/${metricName}/validate`);
 }
 
 /** 上线指标 */
