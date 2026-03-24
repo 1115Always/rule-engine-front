@@ -75,12 +75,14 @@ const urlTemplates: UrlTemplate[] = [
     value: '/metric/admin/process',
     method: 'POST',
     body: {
-      type: 'Transaction',
-      txId: 'TX001',
+      type: 'Transaction',  // 实体类型（用于识别是哪个实体的数据）
+      txId: 'TXN_20260324_001',
       userId: 'U1001',
       amount: 150.5,
-      channel: 'SUCCESS',
-      txTime: '2026-03-20T10:30:00',
+      channel: 'SUCCESS',  // 交易渠道（与 SuccessTxCountByChannel 指标的维度对应）
+      auditStatus: 'APPROVED',  // 审核状态（CrossBorderTxAmount 指标需要）
+      targetCountry: 'US',  // 目标国家（CrossBorderTxAmount 指标的维度）
+      txTime: new Date().toISOString(),
     },
   },
   {
@@ -88,7 +90,7 @@ const urlTemplates: UrlTemplate[] = [
     value: '/metric/admin/query',
     method: 'GET',
     params: {
-      metricName: 'TransactionCount',
+      metricName: '成功交易笔数统计',  // 指标名称（中文）
       dimensionKey: 'SUCCESS',
       windowSize: '1h',
     },
