@@ -6,16 +6,18 @@ import {
   Card,
   Input,
   message,
+  Modal,
   Select,
   Space,
   Table,
   Tag,
 } from 'ant-design-vue';
 
-import { queryFieldList, type FieldOption } from '#/api/rule/field';
+import { queryFieldList, deleteFieldApi, type FieldOption } from '#/api/rule/field';
 import { getSceneOptionsApi } from '#/api/rule/scene';
 
 import AddFieldModal from './add-field-modal.vue';
+import EditFieldModal from './edit-field-modal.vue';
 
 // 表格列定义
 const columns = [
@@ -69,6 +71,12 @@ const columns = [
     key: 'description',
     ellipsis: true,
   },
+  {
+    title: '操作',
+    key: 'action',
+    width: 150,
+    fixed: 'right' as const,
+  },
 ];
 
 // 数据源
@@ -82,6 +90,9 @@ const loading = ref(false);
 
 // 新增字段弹窗
 const addFieldModalRef = ref<InstanceType<typeof AddFieldModal> | null>(null);
+
+// 编辑字段弹窗
+const editFieldModalRef = ref<InstanceType<typeof EditFieldModal> | null>(null);
 
 // 查询参数
 const queryParams = ref({
@@ -147,8 +158,39 @@ const handleAddField = () => {
   addFieldModalRef.value?.open();
 };
 
+// 打开编辑字段弹窗
+const handleEditField = (record: FieldOption) => {
+  editFieldModalRef.value?.open(record.id);
+};
+
+// 删除字段
+const handleDeleteField = async (record: FieldOption) => {
+  Modal.confirm({
+    title: '确认删除',
+    content: `确认删除字段 "${record.fieldName}" 吗？`,
+    okText: '删除',
+    okType: 'danger',
+    cancelText: '取消',
+    async onOk() {
+      try {
+        await deleteFieldApi(record.id);
+        message.success('字段删除成功');
+        loadData();
+      } catch (error: any) {
+        console.error('删除字段失败:', error);
+        // 错误提示由全局拦截器统一处理
+      }
+    },
+  });
+};
+
 // 新增字段成功后刷新列表
 const handleAddSuccess = () => {
+  loadData();
+};
+
+// 编辑字段成功后刷新列表
+const handleEditSuccess = () => {
   loadData();
 };
 
@@ -198,7 +240,7 @@ onMounted(() => {
         :columns="columns"
         :data-source="dataSource"
         :loading="loading"
-        :scroll="{ x: 1000 }"
+        :scroll="{ x: 1200 }"
         row-key="id"
       >
         <template #bodyCell="{ column, record }">
@@ -207,11 +249,32 @@ onMounted(() => {
               {{ getStatusText(record.status) }}
             </Tag>
           </template>
+          <template v-else-if="column.key === 'action'">
+            <Space>
+              <Button
+                type="link"
+                size="small"
+                @click="handleEditField(record)"
+              >
+                编辑
+              </Button>
+              <Button
+                type="link"
+                danger
+                size="small"
+                @click="handleDeleteField(record)"
+              >
+                删除
+              </Button>
+            </Space>
+          </template>
         </template>
       </Table>
     </Card>
 
     <!-- 新增字段弹窗 -->
     <AddFieldModal ref="addFieldModalRef" @success="handleAddSuccess" />
+    <!-- 编辑字段弹窗 -->
+    <EditFieldModal ref="editFieldModalRef" @success="handleEditSuccess" />
   </div>
 </template>

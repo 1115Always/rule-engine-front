@@ -43,6 +43,36 @@ export interface CreateFieldParams {
   status?: string;
 }
 
+/** 更新字段参数 */
+export interface UpdateFieldParams {
+  /** 字段ID */
+  id: string;
+  /** 字段名称 */
+  fieldName: string;
+  /** 描述 */
+  description?: string;
+  /** 字段类型 */
+  fieldType: string;
+  /** 数据类型 */
+  dataType: string;
+  /** 默认值 */
+  defaultValue?: string;
+  /** 字段优先级 */
+  fieldPrior?: number;
+  /** 状态 */
+  status?: string;
+}
+
+/** 字段引用检查结果 */
+export interface FieldReferenceCheckResult {
+  /** 是否被引用 */
+  isReferenced: boolean;
+  /** 引用数量 */
+  referenceCount: number;
+  /** 引用说明 */
+  referenceMessage: string;
+}
+
 /**
  * 查询字段列表
  * @param params 查询参数
@@ -75,4 +105,49 @@ export async function getFieldOptions(params?: QueryFieldParams) {
  */
 export async function createFieldApi(data: CreateFieldParams) {
   return await requestClient.post<FieldOption>('/field/create', data);
+}
+
+/**
+ * 获取字段详情
+ * @param id 字段ID
+ * @returns 字段详情
+ */
+export async function getFieldDetail(id: string) {
+  return await requestClient.get<FieldOption>(`/field/${id}`);
+}
+
+/**
+ * 更新字段
+ * @param data 更新字段参数
+ * @returns 更新后的字段
+ */
+export async function updateFieldApi(data: UpdateFieldParams) {
+  return await requestClient.put<FieldOption>(`/field/${data.id}`, {
+    fieldName: data.fieldName,
+    description: data.description,
+    fieldType: data.fieldType,
+    dataType: data.dataType,
+    defaultValue: data.defaultValue,
+    fieldPrior: data.fieldPrior,
+    status: data.status,
+  });
+}
+
+/**
+ * 删除字段
+ * @param id 字段ID
+ */
+export async function deleteFieldApi(id: string) {
+  return await requestClient.delete(`/field/${id}`);
+}
+
+/**
+ * 检查字段是否被规则条件引用
+ * @param fieldCode 字段编码
+ * @returns 引用检查结果
+ */
+export async function checkFieldReferenceApi(fieldCode: string) {
+  return await requestClient.get<FieldReferenceCheckResult>('/field/check-reference', {
+    params: { fieldCode },
+  });
 }
