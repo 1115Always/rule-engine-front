@@ -2,10 +2,13 @@
  * 名单数据 API
  */
 import { requestClient } from '../request';
+import { useAppConfig } from '@vben/hooks';
 import type { PageResult, ListGroupDTO } from './list-group';
 import { ListTypeOptions, ListLevelOptions } from './list-template';
 export type { ListTypeOptions, ListLevelOptions };
 export { ListTypeOptions, ListLevelOptions };
+
+const { apiURL } = useAppConfig(import.meta.env, import.meta.env.PROD);
 
 export interface ListDTO {
   id?: number;
@@ -109,6 +112,34 @@ export async function batchImport(
  */
 export async function syncToRedis() {
   return requestClient.post<void>('/api/list/sync-redis');
+}
+
+/**
+ * 下载导入模板
+ */
+export function downloadTemplate() {
+  return `${apiURL}/api/list/template/download`;
+}
+
+/**
+ * 导出名单
+ */
+export function exportListUrl(
+  params?: {
+    groupId?: number;
+    listType?: string;
+    listLevel?: string;
+    status?: string;
+    listValue?: string;
+  }
+) {
+  const searchParams = new URLSearchParams();
+  if (params?.groupId) searchParams.append('groupId', String(params.groupId));
+  if (params?.listType) searchParams.append('listType', params.listType);
+  if (params?.listLevel) searchParams.append('listLevel', params.listLevel);
+  if (params?.status) searchParams.append('status', params.status);
+  if (params?.listValue) searchParams.append('listValue', params.listValue);
+  return `${apiURL}/api/list/export?${searchParams.toString()}`;
 }
 
 /**

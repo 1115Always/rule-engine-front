@@ -11,14 +11,34 @@ const routes: RouteRecordRaw[] = [
     path: '/list',
     children: [
       {
-        name: 'ListIndex',
-        path: 'index',
-        component: () => import('#/views/list/index.vue'),
+        name: 'ListGroup',
+        path: 'group',
+        component: () => import('#/views/list/group/list-group.vue'),
         meta: {
-          affixTab: true,
-          icon: 'lucide:list',
+          icon: 'lucide:folder',
           keepAlive: true,
-          title: '名单管理',
+          title: '分组管理',
+        },
+      },
+      {
+        name: 'ListTemplate',
+        path: 'template',
+        component: () => import('#/views/list/template/list-template.vue'),
+        meta: {
+          icon: 'lucide:clipboard-list',
+          keepAlive: true,
+          title: '模板管理',
+        },
+      },
+      {
+        name: 'ListData',
+        path: 'data',
+        component: () => import('#/views/list/data/list-data.vue'),
+        meta: {
+          icon: 'lucide:list',
+          affixTab: true,
+          keepAlive: true,
+          title: '名单数据',
         },
       },
     ],

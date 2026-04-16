@@ -26,12 +26,14 @@ import {
   pageList,
   syncToRedis,
   updateList,
+  exportListUrl,
   type CreateListDTO,
   type ListDTO,
   ListTypeOptions,
   ListLevelOptions,
 } from '#/api/list/list';
 import { listAllGroup } from '#/api/list/list-group';
+import ListImport from './list-import.vue';
 
 const emit = defineEmits<{
   edit: [record: ListDTO];
@@ -231,6 +233,31 @@ const handleSyncRedis = async () => {
   }
 };
 
+// 导出
+const handleExport = () => {
+  const url = exportListUrl({
+    groupId: searchState.value.groupId,
+    listType: searchState.value.listType || undefined,
+    listLevel: searchState.value.listLevel || undefined,
+    status: searchState.value.status || undefined,
+    listValue: searchState.value.listValue || undefined,
+  });
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = '名单数据导出.xlsx';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+// 导入组件引用
+const listImportRef = ref<InstanceType<typeof ListImport>>();
+
+// 打开导入弹窗
+const handleOpenImport = () => {
+  listImportRef.value?.openImport();
+};
+
 // 获取类型标签
 const getTypeLabel = (type: string) => {
   return ListTypeOptions.find((t) => t.value === type)?.label || type;
@@ -270,7 +297,8 @@ defineExpose({ loadData });
 </script>
 
 <template>
-  <Card title="名单数据">
+  <div>
+    <Card title="名单数据">
     <!-- 搜索区域 -->
     <div class="mb-4 flex flex-wrap items-center gap-4">
       <Select
@@ -311,6 +339,8 @@ defineExpose({ loadData });
       <Button @click="handleReset">重置</Button>
       <Button type="primary" @click="handleCreate">创建名单</Button>
       <Button @click="handleSyncRedis">同步Redis</Button>
+      <Button type="primary" @click="handleOpenImport">批量导入</Button>
+      <Button @click="handleExport">导出</Button>
     </div>
 
     <Table
@@ -378,4 +408,6 @@ defineExpose({ loadData });
       </Form>
     </Modal>
   </Card>
+  <ListImport ref="listImportRef" />
+</div>
 </template>
