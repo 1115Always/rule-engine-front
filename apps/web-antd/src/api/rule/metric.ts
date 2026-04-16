@@ -1,19 +1,5 @@
 import { requestClient } from '#/api/request';
 
-/** 指标实体 */
-export interface MetricEntity {
-  id: string;
-  entityCode: string;
-  entityName: string;
-  fieldSchema: string;
-  status: string;
-  enabled: number;
-  createdAt?: string;
-  createdBy?: string;
-  updatedAt?: string;
-  updatedBy?: string;
-}
-
 /** 指标代码列表项（查询接口返回） */
 export interface MetricCode {
   id: string;
@@ -25,26 +11,6 @@ export interface MetricCode {
   createdBy?: string;
   updatedAt?: string;
   updatedBy?: string;
-}
-
-/** 查询实体列表 */
-export async function listEntitiesApi() {
-  return await requestClient.get<MetricEntity[]>('/metric/admin/entities');
-}
-
-/** 创建实体 */
-export async function createEntityApi(data: Partial<MetricEntity>) {
-  return await requestClient.post('/metric/admin/entities', data);
-}
-
-/** 更新实体 */
-export async function updateEntityApi(id: string, data: Partial<MetricEntity>) {
-  return await requestClient.put(`/metric/admin/entities/${id}`, data);
-}
-
-/** 删除实体 */
-export async function deleteEntityApi(id: string) {
-  return await requestClient.delete(`/metric/admin/entities/${id}`);
 }
 
 /** 查询指标列表 */
@@ -90,13 +56,4 @@ export async function offlineMetricApi(metricName: string) {
 /** 全量构建 */
 export async function buildAllApi() {
   return await requestClient.post('/metric/admin/build');
-}
-
-/** 获取实体选项（用于下拉框） */
-export async function getEntityOptionsApi() {
-  const list = await listEntitiesApi();
-  return list.map((item) => ({
-    label: `${item.entityName}（${item.entityCode}）`,
-    value: item.entityCode,
-  }));
 }

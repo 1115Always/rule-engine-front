@@ -11,16 +11,6 @@ const routes: RouteRecordRaw[] = [
     path: '/metric',
     children: [
       {
-        name: 'MetricEntity',
-        path: 'entity',
-        component: () => import('#/views/metric/entity/index.vue'),
-        meta: {
-          icon: 'lucide:box',
-          keepAlive: true,
-          title: '实体维护',
-        },
-      },
-      {
         name: 'MetricCode',
         path: 'code',
         component: () => import('#/views/metric/code/index.vue'),
