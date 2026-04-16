@@ -5,27 +5,22 @@ import { requestClient } from '../request';
 
 export interface ListGroupDTO {
   id?: number;
-  groupCode: string;
   groupName: string;
   description?: string;
-  sortOrder?: number;
   status?: string;
   createdAt?: string;
   createdBy?: string;
 }
 
 export interface CreateListGroupDTO {
-  groupCode: string;
   groupName: string;
   description?: string;
-  sortOrder?: number;
 }
 
 export interface UpdateListGroupDTO {
   id: number;
   groupName: string;
   description?: string;
-  sortOrder?: number;
   status?: string;
 }
 

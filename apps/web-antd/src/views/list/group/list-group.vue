@@ -32,11 +32,9 @@ const emit = defineEmits<{
 
 // 表格列定义
 const columns = [
-  { title: '分组编码', dataIndex: 'groupCode', key: 'groupCode', width: 150 },
   { title: '分组名称', dataIndex: 'groupName', key: 'groupName', width: 150 },
   { title: '描述', dataIndex: 'description', key: 'description', width: 200, ellipsis: true },
   { title: '状态', dataIndex: 'status', key: 'status', width: 100 },
-  { title: '排序', dataIndex: 'sortOrder', key: 'sortOrder', width: 80 },
   { title: '创建时间', dataIndex: 'createdAt', key: 'createdAt', width: 160 },
   { title: '操作', key: 'action', width: 150 },
 ];
@@ -58,10 +56,8 @@ const formRef = ref();
 const editingId = ref<number | null>(null);
 
 const formState = ref<CreateListGroupDTO>({
-  groupCode: '',
   groupName: '',
   description: '',
-  sortOrder: 0,
 });
 
 // 加载数据
@@ -106,7 +102,7 @@ const handleTableChange = (pag: any) => {
 const handleCreate = () => {
   editingId.value = null;
   modalTitle.value = '创建分组';
-  formState.value = { groupCode: '', groupName: '', description: '', sortOrder: 0 };
+  formState.value = { groupName: '', description: '' };
   modalVisible.value = true;
 };
 
@@ -118,10 +114,8 @@ const handleEdit = async (record: ListGroupDTO) => {
   try {
     const result = await getGroupById(record.id!);
     formState.value = {
-      groupCode: result.groupCode,
       groupName: result.groupName,
       description: result.description || '',
-      sortOrder: result.sortOrder || 0,
     };
     modalVisible.value = true;
   } catch (error) {
@@ -226,17 +220,11 @@ defineExpose({ loadData });
       @ok="handleSubmit"
     >
       <Form ref="formRef" :model="formState" layout="vertical">
-        <FormItem label="分组编码" name="groupCode" :rules="[{ required: true, message: '请输入分组编码' }]">
-          <Input v-model:value="formState.groupCode" placeholder="请输入分组编码" />
-        </FormItem>
         <FormItem label="分组名称" name="groupName" :rules="[{ required: true, message: '请输入分组名称' }]">
           <Input v-model:value="formState.groupName" placeholder="请输入分组名称" />
         </FormItem>
         <FormItem label="描述" name="description">
           <Input v-model:value="formState.description" placeholder="请输入描述" />
-        </FormItem>
-        <FormItem label="排序号" name="sortOrder">
-          <Input v-model:value="formState.sortOrder" type="number" placeholder="请输入排序号" />
         </FormItem>
       </Form>
     </Modal>

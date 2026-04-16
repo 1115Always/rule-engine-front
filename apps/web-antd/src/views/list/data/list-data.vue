@@ -81,7 +81,7 @@ const editingId = ref<number | null>(null);
 const importModalVisible = ref(false);
 
 const formState = ref<CreateListDTO>({
-  groupId: 0,
+  groupId: undefined as any,
   listType: 'ACCOUNT',
   listValue: '',
   listLevel: 'BLACK',
@@ -152,7 +152,7 @@ const handleCreate = () => {
   editingId.value = null;
   modalTitle.value = '创建名单';
   formState.value = {
-    groupId: 0,
+    groupId: undefined as any,
     listType: 'ACCOUNT',
     listValue: '',
     listLevel: 'BLACK',
