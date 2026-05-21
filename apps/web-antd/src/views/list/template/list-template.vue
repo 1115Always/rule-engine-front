@@ -29,6 +29,7 @@ import {
 } from '#/api/list/list-template';
 import { listAllGroup } from '#/api/list/list-group';
 import { ListTypeOptions, ListLevelOptions } from '#/api/list/list-template';
+import { queryFieldList } from '#/api/rule/field';
 
 const emit = defineEmits<{
   edit: [record: ListTemplateDTO];
@@ -65,6 +66,9 @@ const editingId = ref<number | null>(null);
 // 分组选项
 const groupOptions = ref<Array<{ label: string; value: number }>>([]);
 
+// 字段选项
+const fieldOptions = ref<Array<{ label: string; value: number }>>([]);
+
 const formState = ref<CreateListTemplateDTO>({
   templateName: '',
   groupId: 0,
@@ -99,6 +103,18 @@ const loadGroupOptions = async () => {
     groupOptions.value = groups.map((g) => ({ label: g.groupName, value: g.id! }));
   } catch (error) {
     console.error('获取分组列表失败:', error);
+  }
+};
+
+// 加载字段选项
+const loadFieldOptions = async () => {
+  try {
+    const fields = await queryFieldList();
+    fieldOptions.value = fields
+      .filter((f) => f.status === 'ACTIVE')
+      .map((f) => ({ label: `${f.fieldName}（${f.fieldCode}）`, value: Number(f.id) }));
+  } catch (error) {
+    console.error('获取字段列表失败:', error);
   }
 };
 
@@ -222,6 +238,7 @@ const getLevelColor = (level: string) => {
 onMounted(() => {
   loadData();
   loadGroupOptions();
+  loadFieldOptions();
 });
 
 defineExpose({ loadData });
@@ -290,8 +307,8 @@ defineExpose({ loadData });
         <FormItem label="名单级别" name="listLevel" :rules="[{ required: true, message: '请选择名单级别' }]">
           <Select v-model:value="formState.listLevel" :options="ListLevelOptions" placeholder="请选择名单级别" />
         </FormItem>
-        <FormItem label="关联字段ID" name="fieldId" :rules="[{ required: true, message: '请输入关联字段ID' }]">
-          <Input v-model:value="formState.fieldId" type="number" placeholder="请输入关联字段ID" />
+        <FormItem label="关联字段" name="fieldId" :rules="[{ required: true, message: '请选择关联字段' }]">
+          <Select v-model:value="formState.fieldId" :options="fieldOptions" placeholder="请选择关联字段（名单中存储的值类型）" />
         </FormItem>
         <FormItem label="描述" name="description">
           <Input v-model:value="formState.description" placeholder="请输入描述" />
