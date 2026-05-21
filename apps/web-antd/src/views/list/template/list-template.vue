@@ -308,7 +308,7 @@ defineExpose({ loadData });
           <Select v-model:value="formState.listLevel" :options="ListLevelOptions" placeholder="请选择名单级别" />
         </FormItem>
         <FormItem label="关联字段" name="fieldId" :rules="[{ required: true, message: '请选择关联字段' }]">
-          <Select v-model:value="formState.fieldId" :options="fieldOptions" placeholder="请选择关联字段（名单中存储的值类型）" />
+          <Select v-model:value="formState.fieldId" :options="fieldOptions" placeholder="请选择关联字段（名单中存储的值类型）" show-search :filter-option="(input: string, option: any) => option.label?.toLowerCase().includes(input.toLowerCase())" />
         </FormItem>
         <FormItem label="描述" name="description">
           <Input v-model:value="formState.description" placeholder="请输入描述" />
