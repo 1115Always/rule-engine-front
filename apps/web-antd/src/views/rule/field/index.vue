@@ -153,6 +153,15 @@ const getStatusText = (status: string) => {
   return status === 'ACTIVE' ? '启用' : '禁用';
 };
 
+// 获取字段类型文本
+const getFieldTypeText = (type: string) => {
+  const map: Record<string, string> = {
+    SIMPLE: '简单字段',
+    COMPLEX: '复杂字段',
+  };
+  return map[type] || type;
+};
+
 // 打开新增字段弹窗
 const handleAddField = () => {
   addFieldModalRef.value?.open();
@@ -244,7 +253,10 @@ onMounted(() => {
         row-key="id"
       >
         <template #bodyCell="{ column, record }">
-          <template v-if="column.key === 'status'">
+          <template v-if="column.key === 'fieldType'">
+            <Tag :color="record.fieldType === 'COMPLEX' ? 'orange' : 'blue'">{{ getFieldTypeText(record.fieldType) }}</Tag>
+          </template>
+          <template v-else-if="column.key === 'status'">
             <Tag :color="getStatusColor(record.status)">
               {{ getStatusText(record.status) }}
             </Tag>
