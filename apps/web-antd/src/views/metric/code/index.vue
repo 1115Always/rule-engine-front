@@ -125,7 +125,7 @@ const handleDelete = (record: MetricCode) => {
 
 const handleValidate = async (record: MetricCode) => {
   try {
-    await validateMetricApi(record.metricName);
+    await validateMetricApi(record.id);
     message.success('验证通过');
     loadData();
   } catch (error: any) {
@@ -143,7 +143,7 @@ const handleOnline = (record: MetricCode) => {
     title: '确认上线',
     content: `确定上线指标「${record.metricName}」吗？`,
     async onOk() {
-      await onlineMetricApi(record.metricName);
+      await onlineMetricApi(record.id);
       message.success('上线成功');
       loadData();
     },
@@ -159,7 +159,7 @@ const handleOffline = (record: MetricCode) => {
     title: '确认下线',
     content: `确定下线指标「${record.metricName}」吗？下线后需要重新全量构建才能生效。`,
     async onOk() {
-      await offlineMetricApi(record.metricName);
+      await offlineMetricApi(record.id);
       message.success('下线成功');
       loadData();
     },

@@ -39,18 +39,18 @@ export async function deleteMetricApi(id: string) {
 }
 
 /** 验证指标 */
-export async function validateMetricApi(metricName: string) {
-  return await requestClient.post(`/metric/admin/codes/${metricName}/validate`);
+export async function validateMetricApi(id: string) {
+  return await requestClient.post(`/metric/admin/codes/${id}/validate`);
 }
 
 /** 上线指标 */
-export async function onlineMetricApi(metricName: string) {
-  return await requestClient.post(`/metric/admin/codes/${metricName}/online`);
+export async function onlineMetricApi(id: string) {
+  return await requestClient.post(`/metric/admin/codes/${id}/online`);
 }
 
 /** 下线指标 */
-export async function offlineMetricApi(metricName: string) {
-  return await requestClient.post(`/metric/admin/codes/${metricName}/offline`);
+export async function offlineMetricApi(id: string) {
+  return await requestClient.post(`/metric/admin/codes/${id}/offline`);
 }
 
 /** 全量构建 */
