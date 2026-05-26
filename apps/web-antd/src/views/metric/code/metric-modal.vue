@@ -11,7 +11,7 @@ import {
   updateMetricApi,
 } from '#/api/rule/metric';
 
-type ModalMode = 'create' | 'edit';
+type ModalMode = 'create' | 'edit' | 'view';
 
 const emit = defineEmits<{
   success: [];
@@ -77,20 +77,25 @@ defineExpose({
   open: (mode: ModalMode, record?: MetricCode) => {
     resetForm();
     modalMode.value = mode;
-    if (mode === 'edit' && record) {
+    if ((mode === 'edit' || mode === 'view') && record) {
       currentId.value = record.id;
       formModel.metricName = record.metricName;
       formModel.dslCode = record.dslCode;
       formModel.enabled = record.enabled;
     }
-    modalApi.setState({ title: mode === 'create' ? '新增指标' : '编辑指标' });
+    const titles: Record<ModalMode, string> = {
+      create: '新增指标',
+      edit: '编辑指标',
+      view: '指标详情',
+    };
+    modalApi.setState({ title: titles[mode] });
     modalApi.open();
   },
 });
 </script>
 
 <template>
-  <Modal>
+  <Modal :show-confirm-button="modalMode !== 'view'">
     <Form
       :label-col="{ span: 5 }"
       :model="formModel"
@@ -100,7 +105,7 @@ defineExpose({
       <FormItem label="指标名称" name="metricName" required>
         <Input
           v-model:value="formModel.metricName"
-          :disabled="modalMode === 'edit'"
+          :disabled="modalMode !== 'create'"
           placeholder="请输入指标名称，如 txn_count_24h"
         />
       </FormItem>
@@ -108,6 +113,7 @@ defineExpose({
         <Input.TextArea
           v-model:value="formModel.dslCode"
           :rows="6"
+          :disabled="modalMode === 'view'"
           placeholder="请输入指标DSL代码"
           style="font-family: monospace"
         />

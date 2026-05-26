@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { h, onMounted, ref } from 'vue';
 
 import { formatDateTime } from '@vben/utils';
 
@@ -33,6 +33,16 @@ const columns = [
     dataIndex: 'metricName',
     key: 'metricName',
     width: 200,
+    customRender: ({ record }: { record: MetricCode }) => {
+      return h(
+        'a',
+        {
+          onClick: () => handleView(record),
+          style: 'color: #1890ff; cursor: pointer;',
+        },
+        record.metricName,
+      );
+    },
   },
   {
     title: '状态',
@@ -98,14 +108,15 @@ const handleAdd = () => {
   metricModalRef.value?.open('create');
 };
 
-const handleEdit = async (record: MetricCode) => {
-  if (record.status === 'ONLINE') {
-    message.warning('已上线的指标不允许编辑，请先下线');
-    return;
-  }
+const handleView = async (record: MetricCode) => {
   try {
     const detail = await getMetricApi(Number(record.id));
-    metricModalRef.value?.open('edit', detail);
+    // 根据状态判断打开编辑还是只读模式
+    if (record.status === 'ONLINE') {
+      metricModalRef.value?.open('view', detail);
+    } else {
+      metricModalRef.value?.open('edit', detail);
+    }
   } catch {
     // 错误提示由 request.ts 拦截器统一处理
   }
@@ -263,9 +274,6 @@ onMounted(() => {
 
           <template v-else-if="column.key === 'action'">
             <Space>
-              <Button size="small" type="link" @click="handleEdit(record)">
-                编辑
-              </Button>
               <Button size="small" type="link" @click="handleValidate(record)">
                 验证
               </Button>
