@@ -143,8 +143,9 @@ const handleValidate = async (record: MetricCode) => {
     await validateMetricApi(record.id);
     message.success('验证通过');
     loadData();
-  } catch (error: any) {
-    // 错误提示由 request.ts 拦截器统一处理，无需重复提示
+  } catch {
+    // 验证失败，刷新列表显示最新状态
+    loadData();
   }
 };
 
@@ -206,6 +207,9 @@ const getStatusColor = (status: string) => {
     case 'DEVELOPING': {
       return 'orange';
     }
+    case 'VALIDATED_FAILED': {
+      return 'red';
+    }
     default: {
       return 'default';
     }
@@ -218,10 +222,13 @@ const getStatusText = (status: string) => {
       return '已上线';
     }
     case 'VALIDATED': {
-      return '已验证';
+      return '验证通过';
     }
     case 'DEVELOPING': {
       return '开发中';
+    }
+    case 'VALIDATED_FAILED': {
+      return '验证失败';
     }
     default: {
       return status;
