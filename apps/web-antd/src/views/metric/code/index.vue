@@ -99,6 +99,10 @@ const handleAdd = () => {
 };
 
 const handleEdit = async (record: MetricCode) => {
+  if (record.status === 'ONLINE') {
+    message.warning('已上线的指标不允许编辑，请先下线');
+    return;
+  }
   try {
     const detail = await getMetricApi(Number(record.id));
     metricModalRef.value?.open('edit', detail);
