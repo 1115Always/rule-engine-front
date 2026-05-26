@@ -103,7 +103,7 @@ const handleEdit = async (record: MetricCode) => {
     const detail = await getMetricApi(Number(record.id));
     metricModalRef.value?.open('edit', detail);
   } catch {
-    message.error('获取指标详情失败');
+    // 错误提示由 request.ts 拦截器统一处理
   }
 };
 
@@ -129,8 +129,7 @@ const handleValidate = async (record: MetricCode) => {
     message.success('验证通过');
     loadData();
   } catch (error: any) {
-    const errorMsg = error?.response?.data?.message || error?.message || '验证失败';
-    message.error(`验证失败: ${errorMsg}`);
+    // 错误提示由 request.ts 拦截器统一处理，无需重复提示
   }
 };
 
