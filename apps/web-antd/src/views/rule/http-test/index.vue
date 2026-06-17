@@ -143,7 +143,8 @@ const urlTemplates: UrlTemplate[] = [
     params: {
       metricName: '各城市交易笔数统计',
       dimensionKey: 'BJ',
-      windowSize: '1d',
+      baseTimestamp: Date.now(),
+      queryWindow: '1d',
     },
   },
 ];
