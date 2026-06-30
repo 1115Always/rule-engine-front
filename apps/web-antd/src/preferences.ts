@@ -9,5 +9,8 @@ export const overridesPreferences = defineOverridesPreferences({
   // overrides
   app: {
     name: import.meta.env.VITE_APP_TITLE,
+    // 使用 backend 模式，完全由后端接口返回的菜单树决定可见路由
+    accessMode: 'backend',
+    defaultHomePath: '/dashboard',
   },
 });
