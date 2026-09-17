@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { nextTick, onMounted, ref } from 'vue';
 
 import { formatDateTime } from '@vben/utils';
 
@@ -69,12 +69,19 @@ const groupOptions = ref<Array<{ label: string; value: number }>>([]);
 // 字段选项
 const fieldOptions = ref<Array<{ label: string; value: number }>>([]);
 
-const formState = ref<CreateListTemplateDTO>({
+// 表单数据类型：groupId/fieldId 提交前由必填校验保证有值，未选择时为 undefined
+// （不能给 0：下拉选项中不存在 value=0，vc-select 会把原始值 0 当成标签显示）
+type TemplateFormState = Omit<CreateListTemplateDTO, 'groupId' | 'fieldId'> & {
+  groupId?: number;
+  fieldId?: number;
+};
+
+const formState = ref<TemplateFormState>({
   templateName: '',
-  groupId: 0,
+  groupId: undefined,
   listType: 'ACCOUNT',
   listLevel: 'BLACK',
-  fieldId: 0,
+  fieldId: undefined,
   description: '',
 });
 
@@ -144,13 +151,14 @@ const handleCreate = () => {
   modalTitle.value = '创建模板';
   formState.value = {
     templateName: '',
-    groupId: 0,
+    groupId: undefined,
     listType: 'ACCOUNT',
     listLevel: 'BLACK',
-    fieldId: 0,
+    fieldId: undefined,
     description: '',
   };
   modalVisible.value = true;
+  nextTick(() => formRef.value?.clearValidate());
 };
 
 // 打开编辑弹窗
@@ -169,6 +177,7 @@ const handleEdit = async (record: ListTemplateDTO) => {
       description: result.description || '',
     };
     modalVisible.value = true;
+    nextTick(() => formRef.value?.clearValidate());
   } catch (error) {
     console.error('获取模板详情失败:', error);
   } finally {
@@ -185,7 +194,7 @@ const handleSubmit = async () => {
       await updateTemplate({ id: editingId.value, ...formState.value });
       message.success('更新成功');
     } else {
-      await createTemplate(formState.value);
+      await createTemplate(formState.value as CreateListTemplateDTO);
       message.success('创建成功');
     }
     modalVisible.value = false;
