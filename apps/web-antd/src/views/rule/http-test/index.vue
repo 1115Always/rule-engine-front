@@ -48,6 +48,13 @@ interface UrlTemplate {
   params?: Record<string, string>;
 }
 
+// 当前时间，格式与后端 tradeTime 约定一致：yyyy-MM-dd HH:mm:ss
+const nowForTradeTime = () => {
+  const d = new Date();
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+};
+
 // 常用 URL 模板（含示例数据）
 const urlTemplates: UrlTemplate[] = [
   {
@@ -56,7 +63,7 @@ const urlTemplates: UrlTemplate[] = [
     method: 'POST',
     body: {
       serialNo: 'TXN_20260416_001',
-      tradeTime: Date.now(),
+      tradeTime: '', // 应用模板时自动填入当前时间
       scene: 'IN_TRANSFER',
       data: {
         userId: 'U10001',
@@ -76,7 +83,7 @@ const urlTemplates: UrlTemplate[] = [
     method: 'POST',
     body: {
       serialNo: 'TXN_20260416_002',
-      tradeTime: Date.now(),
+      tradeTime: '', // 应用模板时自动填入当前时间
       scene: 'CROSS_TRANSFER',
       data: {
         userId: 'U10002',
@@ -96,7 +103,7 @@ const urlTemplates: UrlTemplate[] = [
     method: 'POST',
     body: {
       serialNo: 'TXN_20260416_003',
-      tradeTime: Date.now(),
+      tradeTime: '', // 应用模板时自动填入当前时间
       scene: 'QUICK_PAY',
       data: {
         userId: 'U10003',
@@ -118,7 +125,7 @@ const urlTemplates: UrlTemplate[] = [
     method: 'POST',
     body: {
       serialNo: 'TXN_20260416_004',
-      tradeTime: Date.now(),
+      tradeTime: '', // 应用模板时自动填入当前时间
       scene: 'CROSS_BORDER_REMIT',
       data: {
         userId: 'U10004',
@@ -278,7 +285,13 @@ const applyTemplate = (template: UrlTemplate) => {
 
   // 如果有示例请求体，填充到 body
   if (template.body) {
-    body.value = JSON.stringify(template.body, null, 2);
+    // tradeTime 取「点模板那一刻」的当前时间：写在模板定义里只会求值一次，
+    // 会沿用页面加载时间，导致指标窗口错位
+    const filledBody = { ...template.body };
+    if ('tradeTime' in filledBody) {
+      filledBody.tradeTime = nowForTradeTime();
+    }
+    body.value = JSON.stringify(filledBody, null, 2);
     activeTab.value = 'body';
   } else {
     body.value = '';
