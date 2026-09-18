@@ -20,7 +20,7 @@ import {
   Tag,
 } from 'ant-design-vue';
 
-import { useVbenForm } from '#/adapter/form';
+import { useVbenForm, z } from '#/adapter/form';
 import { getActionOptions } from '#/api/rule/action';
 import { getFieldOptions, queryFieldList, type FieldOption } from '#/api/rule/field';
 import {
@@ -742,6 +742,7 @@ const loadRuleDetail = async (id: number | string) => {
         ruleName: formModel.ruleName,
         description: formModel.description,
         actionType: formModel.actionType,
+        actionParam: formModel.actionParam,
       });
     });
   } catch (error) {
@@ -839,7 +840,7 @@ const handleCreateSave = async (values: any) => {
     ruleName: values.ruleName,
     description: values.description || '',
     actionType: values.actionType?.join(',') || '',
-    actionParam: '',
+    actionParam: values.actionParam || '',
     conditionRelation,
     status: 'INACTIVE',
     version: 1,
@@ -911,7 +912,7 @@ const handleEditSave = async (values: any) => {
     ruleName: values.ruleName,
     description: values.description || '',
     actionType: values.actionType?.join(',') || '',
-    actionParam: '',
+    actionParam: values.actionParam || '',
     conditionRelation,
     conditions: conditions.value.map((item) => ({
       conditionKey: item.conditionKey,
@@ -994,6 +995,39 @@ const initializeForm = () => {
         },
         formItemClass: 'col-span-2',
       },
+      {
+        fieldName: 'actionParam',
+        label: '动作参数',
+        component: 'Textarea',
+        componentProps: {
+          placeholder:
+            'JSON 格式，字段按动作类型约定，如 {"message":"命中规则提示"}',
+          rows: 3,
+          disabled: isReadonly,
+        },
+        rules: z
+          .string()
+          .optional()
+          .refine(
+            (value) => {
+              // 允许为空；非空时必须是 JSON 对象
+              // （数组、标量虽属合法 JSON，但后端需解析为 Map，无法接受）
+              if (!value || !value.trim()) return true;
+              try {
+                const parsed = JSON.parse(value);
+                return (
+                  parsed !== null &&
+                  typeof parsed === 'object' &&
+                  !Array.isArray(parsed)
+                );
+              } catch {
+                return false;
+              }
+            },
+            { message: '需为合法的 JSON 对象，如 {"message":"提示语"}' },
+          ),
+        formItemClass: 'col-span-2',
+      },
     ],
   });
 
@@ -1024,6 +1058,7 @@ watch(
         ruleName: formModel.ruleName,
         description: formModel.description,
         actionType: formModel.actionType,
+        actionParam: formModel.actionParam,
         conditionRelation: formModel.conditionRelation,
       });
     });
