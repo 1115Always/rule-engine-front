@@ -57,7 +57,6 @@ const urlTemplates: UrlTemplate[] = [
     body: {
       serialNo: 'TXN_20260416_001',
       tradeTime: Date.now(),
-      timestamp: Date.now(),
       scene: 'IN_TRANSFER',
       data: {
         userId: 'U10001',
@@ -78,7 +77,6 @@ const urlTemplates: UrlTemplate[] = [
     body: {
       serialNo: 'TXN_20260416_002',
       tradeTime: Date.now(),
-      timestamp: Date.now(),
       scene: 'CROSS_TRANSFER',
       data: {
         userId: 'U10002',
@@ -99,7 +97,6 @@ const urlTemplates: UrlTemplate[] = [
     body: {
       serialNo: 'TXN_20260416_003',
       tradeTime: Date.now(),
-      timestamp: Date.now(),
       scene: 'QUICK_PAY',
       data: {
         userId: 'U10003',
@@ -122,7 +119,6 @@ const urlTemplates: UrlTemplate[] = [
     body: {
       serialNo: 'TXN_20260416_004',
       tradeTime: Date.now(),
-      timestamp: Date.now(),
       scene: 'CROSS_BORDER_REMIT',
       data: {
         userId: 'U10004',
