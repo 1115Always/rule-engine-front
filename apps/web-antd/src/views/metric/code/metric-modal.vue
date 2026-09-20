@@ -8,6 +8,7 @@ import {
   Form,
   FormItem,
   Input,
+  InputNumber,
   message,
   RadioButton,
   RadioGroup,
@@ -38,6 +39,29 @@ const AGG_TYPES = ['COUNT', 'SUM', 'AVG', 'MAX', 'MIN', 'LAST', 'LIST', 'SET'];
 /** 需要 valueExpr 的聚合类型（LIST/SET 也需要，后端的 SET 同样取 value） */
 const NEEDS_VALUE = new Set(['SUM', 'AVG', 'MAX', 'MIN', 'LAST', 'LIST', 'SET']);
 
+/**
+ * 存储窗口 = 数量 + 单位，与后端 WINDOW_PATTERN 对齐：
+ * ^[1-9][0-9]*(m|h|d|M|y)$ —— 数量为正整数，单位取自下方下拉。
+ */
+const WINDOW_UNITS = [
+  { label: '分钟', value: 'm' },
+  { label: '小时', value: 'h' },
+  { label: '天', value: 'd' },
+  { label: '月', value: 'M' },
+  { label: '年', value: 'y' },
+];
+
+const WINDOW_PATTERN = /^([1-9][0-9]*)([mhdMy])$/;
+
+/** 把已存的 timeWindow 拆回「数量 + 单位」，无法识别时返回空数量由用户重填 */
+function parseWindow(raw?: string): { unit: string; value: number | undefined } {
+  const matched = WINDOW_PATTERN.exec((raw ?? '').trim());
+  if (!matched) {
+    return { unit: 'd', value: undefined };
+  }
+  return { unit: matched[2] ?? 'd', value: Number(matched[1]) };
+}
+
 const modalMode = ref<ModalMode>('create');
 const currentId = ref<string>('');
 const filterMode = ref<FilterMode>('builder');
@@ -49,7 +73,11 @@ const formModel = reactive({
   dimensionExpr: '',
   aggType: 'COUNT',
   valueExpr: '',
-  timeWindow: '1d',
+  // 存储窗口拆成「数量 + 单位」两个控件，提交时拼成 timeWindow
+  // 类型用 undefined：antd InputNumber 的 ValueType 不含 null，但清空时会 emit null，
+  // 因此下面的取值判断同时覆盖 null / undefined / 0
+  windowValue: 1 as number | undefined,
+  windowUnit: 'd' as string,
   maxSize: '' as string,
   filterExpr: '',
   filterLogic: 'AND' as 'AND' | 'OR',
@@ -58,6 +86,13 @@ const formModel = reactive({
 });
 
 const isView = computed(() => modalMode.value === 'view');
+/** 提交给后端的存储窗口字符串，如 90d */
+const timeWindow = computed(() => {
+  if (!formModel.windowValue) {
+    return '';
+  }
+  return `${formModel.windowValue}${formModel.windowUnit}`;
+});
 const currentFields = computed(() => {
   const entity = entityList.value.find((item) => item.entityCode === formModel.entityCode);
   return parseFieldSchema(entity?.fieldSchema);
@@ -156,8 +191,8 @@ function validateForm(): null | string {
   if (!formModel.dimensionExpr.trim()) {
     return '请输入维度表达式，如 city';
   }
-  if (!formModel.timeWindow.trim()) {
-    return '请输入存储窗口，如 1d、1h、90d';
+  if (!timeWindow.value) {
+    return '请填写存储窗口数量并选择单位';
   }
   if (NEEDS_VALUE.has(formModel.aggType) && !formModel.valueExpr.trim()) {
     return `聚合类型 ${formModel.aggType} 需要填写取值表达式，如 amount`;
@@ -200,7 +235,7 @@ const [Modal, modalApi] = useVbenModal({
       entityCode: formModel.entityCode,
       dimensionExpr: formModel.dimensionExpr.trim(),
       aggType: formModel.aggType,
-      timeWindow: formModel.timeWindow.trim(),
+      timeWindow: timeWindow.value,
       enabled: formModel.enabled,
     };
     if (NEEDS_VALUE.has(formModel.aggType)) {
@@ -252,7 +287,8 @@ const resetForm = () => {
   formModel.dimensionExpr = '';
   formModel.aggType = 'COUNT';
   formModel.valueExpr = '';
-  formModel.timeWindow = '1d';
+  formModel.windowValue = 1;
+  formModel.windowUnit = 'd';
   formModel.maxSize = '';
   formModel.filterExpr = '';
   formModel.filterLogic = 'AND';
@@ -274,7 +310,9 @@ defineExpose({
       formModel.dimensionExpr = record.dimensionExpr ?? '';
       formModel.aggType = record.aggType ?? 'COUNT';
       formModel.valueExpr = record.valueExpr ?? '';
-      formModel.timeWindow = record.timeWindow ?? '1d';
+      const window = parseWindow(record.timeWindow);
+      formModel.windowValue = window.value;
+      formModel.windowUnit = window.unit;
       formModel.maxSize = record.maxSize === undefined ? '' : String(record.maxSize);
       formModel.enabled = record.enabled;
 
@@ -367,11 +405,32 @@ defineExpose({
       </FormItem>
 
       <FormItem label="存储窗口" name="timeWindow" required>
-        <Input
-          v-model:value="formModel.timeWindow"
-          :disabled="isView"
-          placeholder="数字+单位，如 1d、1h、90d"
-        />
+        <div class="window-row">
+          <InputNumber
+            v-model:value="formModel.windowValue"
+            :disabled="isView"
+            :min="1"
+            :precision="0"
+            placeholder="数量"
+            style="width: 140px"
+          />
+          <Select
+            v-model:value="formModel.windowUnit"
+            :disabled="isView"
+            style="width: 140px"
+          >
+            <SelectOption
+              v-for="unit in WINDOW_UNITS"
+              :key="unit.value"
+              :value="unit.value"
+            >
+              {{ unit.label }}（{{ unit.value }}）
+            </SelectOption>
+          </Select>
+        </div>
+        <div class="filter-hint">
+          最终值：{{ timeWindow || '未填写' }}
+        </div>
       </FormItem>
 
       <FormItem label="过滤条件">
@@ -521,6 +580,12 @@ defineExpose({
   gap: 8px;
   align-items: center;
   margin-bottom: 8px;
+}
+
+.window-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
 .filter-hint {
