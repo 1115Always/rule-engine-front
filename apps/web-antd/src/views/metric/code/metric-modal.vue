@@ -21,10 +21,10 @@ import {
   type FilterCondition,
   type FilterRules,
   type MetricCode,
-  listEntitiesApi,
+  type MetricScene,
+  listScenesApi,
   OPERATOR_LABELS,
   OPERATORS_BY_KIND,
-  parseFieldSchema,
   updateMetricApi,
 } from '#/api/rule/metric';
 
@@ -65,11 +65,11 @@ function parseWindow(raw?: string): { unit: string; value: number | undefined } 
 const modalMode = ref<ModalMode>('create');
 const currentId = ref<string>('');
 const filterMode = ref<FilterMode>('builder');
-const entityList = ref<Array<{ entityCode: string; entityName: string; fieldSchema: string }>>([]);
+const sceneList = ref<MetricScene[]>([]);
 
 const formModel = reactive({
   metricName: '',
-  entityCode: undefined as string | undefined,
+  sceneCode: undefined as string | undefined,
   dimensionExpr: '',
   aggType: 'COUNT',
   valueExpr: '',
@@ -94,8 +94,8 @@ const timeWindow = computed(() => {
   return `${formModel.windowValue}${formModel.windowUnit}`;
 });
 const currentFields = computed(() => {
-  const entity = entityList.value.find((item) => item.entityCode === formModel.entityCode);
-  return parseFieldSchema(entity?.fieldSchema);
+  const scene = sceneList.value.find((item) => item.sceneCode === formModel.sceneCode);
+  return scene?.fields ?? [];
 });
 
 /** 字段类型 → 操作符分组，与后端白名单保持一致 */
@@ -147,14 +147,14 @@ function onFieldChange(condition: FilterCondition) {
   condition.value = '';
 }
 
-async function loadEntities() {
-  if (entityList.value.length > 0) {
+async function loadScenes() {
+  if (sceneList.value.length > 0) {
     return;
   }
   try {
-    entityList.value = await listEntitiesApi();
+    sceneList.value = await listScenesApi();
   } catch (error) {
-    console.error('加载实体列表失败:', error);
+    console.error('加载场景列表失败:', error);
   }
 }
 
@@ -185,8 +185,8 @@ function validateForm(): null | string {
   if (!formModel.metricName.trim()) {
     return '请输入指标名称';
   }
-  if (!formModel.entityCode) {
-    return '请选择实体';
+  if (!formModel.sceneCode) {
+    return '请选择场景';
   }
   if (!formModel.dimensionExpr.trim()) {
     return '请输入维度表达式，如 city';
@@ -232,7 +232,7 @@ const [Modal, modalApi] = useVbenModal({
 
     const payload: Partial<MetricCode> = {
       metricName: formModel.metricName.trim(),
-      entityCode: formModel.entityCode,
+      sceneCode: formModel.sceneCode,
       dimensionExpr: formModel.dimensionExpr.trim(),
       aggType: formModel.aggType,
       timeWindow: timeWindow.value,
@@ -283,7 +283,7 @@ const [Modal, modalApi] = useVbenModal({
 
 const resetForm = () => {
   formModel.metricName = '';
-  formModel.entityCode = undefined;
+  formModel.sceneCode = undefined;
   formModel.dimensionExpr = '';
   formModel.aggType = 'COUNT';
   formModel.valueExpr = '';
@@ -301,12 +301,12 @@ defineExpose({
   open: async (mode: ModalMode, record?: MetricCode) => {
     resetForm();
     modalMode.value = mode;
-    await loadEntities();
+    await loadScenes();
 
     if ((mode === 'edit' || mode === 'view') && record) {
       currentId.value = record.id;
       formModel.metricName = record.metricName;
-      formModel.entityCode = record.entityCode;
+      formModel.sceneCode = record.sceneCode;
       formModel.dimensionExpr = record.dimensionExpr ?? '';
       formModel.aggType = record.aggType ?? 'COUNT';
       formModel.valueExpr = record.valueExpr ?? '';
@@ -355,18 +355,18 @@ defineExpose({
         />
       </FormItem>
 
-      <FormItem label="实体" name="entityCode" required>
+      <FormItem label="场景" name="sceneCode" required>
         <Select
-          v-model:value="formModel.entityCode"
+          v-model:value="formModel.sceneCode"
           :disabled="isView"
-          placeholder="请选择指标所属实体"
+          placeholder="请选择指标所属场景"
         >
           <SelectOption
-            v-for="entity in entityList"
-            :key="entity.entityCode"
-            :value="entity.entityCode"
+            v-for="scene in sceneList"
+            :key="scene.sceneCode"
+            :value="scene.sceneCode"
           >
-            {{ entity.entityName }}（{{ entity.entityCode }}）
+            {{ scene.sceneName }}（{{ scene.sceneCode }}）
           </SelectOption>
         </Select>
       </FormItem>
@@ -540,7 +540,7 @@ defineExpose({
             未添加条件表示不过滤
           </div>
           <div v-else class="filter-hint">
-            保存时由后台拼成表达式；未选择实体的字段无法下拉
+            保存时由后台拼成表达式；未选择场景的字段无法下拉
           </div>
         </template>
 

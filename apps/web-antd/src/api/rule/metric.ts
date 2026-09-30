@@ -1,20 +1,17 @@
 import { requestClient } from '#/api/request';
 
-/** 实体字段定义（metric_entity.field_schema 的元素） */
+/** 指标可用字段（来自该场景启用的 rule_field） */
 export interface MetricField {
   fieldName: string;
   fieldType: string;
   cnName?: string;
 }
 
-/** 指标实体 */
-export interface MetricEntity {
-  id: string;
-  entityCode: string;
-  entityName: string;
-  /** 字段定义 JSON 文本，使用前需 JSON.parse 成 MetricField[] */
-  fieldSchema: string;
-  status: string;
+/** 指标可选场景及其可用字段（供场景 / 字段下拉） */
+export interface MetricScene {
+  sceneCode: string;
+  sceneName: string;
+  fields: MetricField[];
 }
 
 /** 单条过滤条件 */
@@ -34,7 +31,7 @@ export interface FilterRules {
 export interface MetricCode {
   id: string;
   metricName: string;
-  entityCode?: string;
+  sceneCode?: string;
   /** 维度表达式，如 city */
   dimensionExpr?: string;
   /** 最终过滤表达式；运行期以它为准 */
@@ -64,9 +61,9 @@ export async function listMetricsApi() {
   return await requestClient.get<MetricCode[]>('/metric/admin/codes');
 }
 
-/** 查询实体列表（含字段定义，供条件构建器使用） */
-export async function listEntitiesApi() {
-  return await requestClient.get<MetricEntity[]>('/metric/admin/entities');
+/** 查询场景列表（含各场景可用字段，供场景与条件构建器使用） */
+export async function listScenesApi() {
+  return await requestClient.get<MetricScene[]>('/metric/admin/scenes');
 }
 
 /** 获取指标详情 */
@@ -159,15 +156,3 @@ export function fieldKind(fieldType?: string): 'boolean' | 'number' | 'string' {
   return 'string';
 }
 
-/** 解析实体字段定义，脏数据返回空数组而不是抛错 */
-export function parseFieldSchema(fieldSchema?: string): MetricField[] {
-  if (!fieldSchema) {
-    return [];
-  }
-  try {
-    const parsed = JSON.parse(fieldSchema);
-    return Array.isArray(parsed) ? (parsed as MetricField[]) : [];
-  } catch {
-    return [];
-  }
-}
