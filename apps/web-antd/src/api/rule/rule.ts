@@ -99,9 +99,14 @@ export async function deleteRuleApi(id: number | string) {
 }
 
 /**
- * 更新规则状态
+ * 更新规则状态（状态机流转，合法性由后端判定）
+ *
+ * 试运行路径：OFFLINE →试运行→ TRAINING →试运行结束→ TRAINED →上线→ ONLINE；
+ * 反向：TRAINING →取消试运行→ OFFLINE、TRAINED →重新试运行→ TRAINING、
+ * ONLINE →下线→ OFFLINE。
+ *
  * @param id 规则ID
- * @param status 状态（ACTIVE/INACTIVE）
+ * @param status 目标状态，取值 OFFLINE / TRAINING / TRAINED / ONLINE
  */
 export async function updateRuleStatusApi(id: number | string, status: string) {
   return await requestClient.put("/rule/updateStatus", { id, status });

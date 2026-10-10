@@ -75,7 +75,10 @@ const modalTitle = computed(() => {
 });
 
 // 是否只读模式（ACTIVE 状态时为只读）
-const isReadonly = computed(() => currentRuleStatus.value === 'ACTIVE');
+// 锁定态（已上线 / 试运行中）不可编辑，与后端 RuleStatus.isLocked 一致
+const isReadonly = computed(
+  () => currentRuleStatus.value === 'ONLINE' || currentRuleStatus.value === 'TRAINING',
+);
 
 // 逻辑关系类型
 type LogicRelationType = 'ALL_AND' | 'ALL_OR' | 'CUSTOM';
@@ -695,7 +698,7 @@ const loadRuleDetail = async (id: number | string) => {
   loading.value = true;
   try {
     const detail = await getRuleDetailApi(id);
-    // 保存规则状态（ACTIVE 状态时为只读）
+    // 保存规则状态（锁定态：已上线 / 试运行中 时为只读）
     currentRuleStatus.value = detail.status || '';
     // 填充表单数据
     formModel.ruleName = detail.ruleName || '';
@@ -842,7 +845,7 @@ const handleCreateSave = async (values: any) => {
     actionType: values.actionType?.join(',') || '',
     actionParam: values.actionParam || '',
     conditionRelation,
-    status: 'INACTIVE',
+    status: 'OFFLINE',
     version: 1,
     conditions: conditions.value.map((item) => ({
       conditionKey: item.conditionKey,

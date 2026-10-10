@@ -47,6 +47,20 @@ const packageInfo = computed(() => ({
   name: props.packageName || (route.query.packageName as string) || '',
 }));
 
+// 规则状态元数据（code 与后端 RuleStatus 对应）
+const RULE_STATUS_META: Record<string, { label: string; color: string }> = {
+  OFFLINE: { label: '离线', color: 'default' },
+  TRAINING: { label: '试运行中', color: 'processing' },
+  TRAINED: { label: '试运行结束', color: 'warning' },
+  ONLINE: { label: '已上线', color: 'success' },
+};
+
+// 锁定态（已上线 / 试运行中）：不可编辑、不可删除，与后端 RuleStatus.isLocked 一致
+const isLockedStatus = (status: string) => status === 'ONLINE' || status === 'TRAINING';
+
+const getStatusMeta = (status: string) =>
+  RULE_STATUS_META[status] ?? { label: status || '未知', color: 'default' };
+
 //表格列定义
 const columns = [
   {
@@ -60,6 +74,12 @@ const columns = [
     dataIndex: 'packageName',
     key: 'packageName',
     width: 120,
+  },
+  {
+    title: '状态',
+    dataIndex: 'status',
+    key: 'status',
+    width: 110,
   },
   {
     title: '动作类型',
@@ -90,7 +110,7 @@ const columns = [
   {
     title: '操作',
     key: 'action',
-    width: 240,
+    width: 300,
   },
 ];
 
@@ -173,9 +193,12 @@ const handleEdit = (record: any) => {
 
 // 删除规则
 const handleDelete = (record: any) => {
-  // 校验：ACTIVE 状态不允许删除
-  if (record.status === 'ACTIVE') {
-    message.warning('规则处于上线状态，请先下线后再删除');
+  // 校验：锁定态（已上线 / 试运行中）不允许删除
+  if (isLockedStatus(record.status)) {
+    const unlockAction = record.status === 'ONLINE' ? '下线' : '取消试运行';
+    message.warning(
+      `规则处于${getStatusMeta(record.status).label}状态，请先${unlockAction}后再删除`,
+    );
     return;
   }
 
@@ -196,14 +219,12 @@ const handleDelete = (record: any) => {
   });
 };
 
-// 切换规则状态（上线/下线）
-const handleToggleStatus = async (record: any) => {
-  const isActive = record.status === 'ACTIVE';
-  const newStatus = isActive ? 'INACTIVE' : 'ACTIVE';
-  const actionText = isActive ? '下线' : '上线';
-
+// 变更规则状态（试运行 / 试运行结束 / 取消试运行 / 上线 / 下线 / 重新试运行）
+// 合法性由后端状态机判定（RuleStatus.allowedTargets）；前端只提供当前状态可达的入口，
+// 不重复实现一份流转表——「必须试运行结束才能上线」由后端强制，前端藏按钮只是体验。
+const changeStatus = async (record: any, target: string, actionText: string) => {
   try {
-    await updateRuleStatusApi(record.id, newStatus);
+    await updateRuleStatusApi(record.id, target);
     message.success(`${actionText}成功`);
     // 刷新列表
     loadData();
@@ -338,6 +359,11 @@ defineExpose({
         <template v-else-if="column.key === 'packageName'">
           <Tag color="green">{{ record.packageName }}</Tag>
         </template>
+        <template v-else-if="column.key === 'status'">
+          <Tag :color="getStatusMeta(record.status).color">
+            {{ getStatusMeta(record.status).label }}
+          </Tag>
+        </template>
         <template v-else-if="column.key === 'actionType'">
           <Space :size="4">
             <Tag
@@ -357,26 +383,68 @@ defineExpose({
         </template>
         <template v-else-if="column.key === 'action'">
           <Space>
+            <!-- OFFLINE：试运行 -->
             <Button
-              v-if="record.status === 'ACTIVE'"
+              v-if="record.status === 'OFFLINE'"
               type="primary"
-              danger
               size="small"
-              @click="handleToggleStatus(record)"
+              @click="changeStatus(record, 'TRAINING', '试运行')"
             >
-              <IconifyIcon icon="ant-design:arrow-down-outlined" />
-              下线
+              <IconifyIcon icon="ant-design:play-circle-outlined" />
+              试运行
+            </Button>
+
+            <!-- TRAINING：试运行结束 / 取消试运行 -->
+            <Button
+              v-if="record.status === 'TRAINING'"
+              type="primary"
+              size="small"
+              @click="changeStatus(record, 'TRAINED', '试运行结束')"
+            >
+              <IconifyIcon icon="ant-design:check-outlined" />
+              试运行结束
             </Button>
             <Button
-              v-else
+              v-if="record.status === 'TRAINING'"
+              size="small"
+              @click="changeStatus(record, 'OFFLINE', '取消试运行')"
+            >
+              取消试运行
+            </Button>
+
+            <!-- TRAINED：上线 / 重新试运行 -->
+            <Button
+              v-if="record.status === 'TRAINED'"
               type="primary"
               size="small"
-              @click="handleToggleStatus(record)"
+              @click="changeStatus(record, 'ONLINE', '上线')"
             >
               <IconifyIcon icon="ant-design:arrow-up-outlined" />
               上线
             </Button>
             <Button
+              v-if="record.status === 'TRAINED'"
+              size="small"
+              @click="changeStatus(record, 'TRAINING', '重新试运行')"
+            >
+              重新试运行
+            </Button>
+
+            <!-- ONLINE：下线 -->
+            <Button
+              v-if="record.status === 'ONLINE'"
+              type="primary"
+              danger
+              size="small"
+              @click="changeStatus(record, 'OFFLINE', '下线')"
+            >
+              <IconifyIcon icon="ant-design:arrow-down-outlined" />
+              下线
+            </Button>
+
+            <!-- 锁定态（已上线 / 试运行中）不可删除 -->
+            <Button
+              v-if="!isLockedStatus(record.status)"
               type="primary"
               danger
               size="small"
