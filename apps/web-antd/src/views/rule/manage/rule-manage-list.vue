@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 import { IconifyIcon } from '@vben/icons';
 import { formatDateTime } from '@vben/utils';
@@ -34,6 +34,7 @@ const props = defineProps<{
 }>();
 
 const route = useRoute();
+const router = useRouter();
 
 // 内部查询参数
 const searchParams = ref({
@@ -234,6 +235,11 @@ const changeStatus = async (record: any, target: string, actionText: string) => 
   }
 };
 
+// 跳转筛查记录并只看试运行：规则试运行期间的命中情况在那边观察
+const viewTrainRecords = () => {
+  router.push({ path: '/rule/record', query: { ruleStatus: 'TRAINING' } });
+};
+
 // 加载动作类型选项
 const loadActionOptions = async () => {
   try {
@@ -394,7 +400,7 @@ defineExpose({
               试运行
             </Button>
 
-            <!-- TRAINING：试运行结束 / 取消试运行 -->
+            <!-- TRAINING：试运行结束 / 取消试运行 / 查看试运行结果 -->
             <Button
               v-if="record.status === 'TRAINING'"
               type="primary"
@@ -411,8 +417,16 @@ defineExpose({
             >
               取消试运行
             </Button>
+            <Button
+              v-if="record.status === 'TRAINING'"
+              size="small"
+              @click="viewTrainRecords"
+            >
+              <IconifyIcon icon="ant-design:profile-outlined" />
+              试运行结果
+            </Button>
 
-            <!-- TRAINED：上线 / 重新试运行 -->
+            <!-- TRAINED：上线 / 重新试运行 / 查看试运行结果 -->
             <Button
               v-if="record.status === 'TRAINED'"
               type="primary"
@@ -428,6 +442,14 @@ defineExpose({
               @click="changeStatus(record, 'TRAINING', '重新试运行')"
             >
               重新试运行
+            </Button>
+            <Button
+              v-if="record.status === 'TRAINED'"
+              size="small"
+              @click="viewTrainRecords"
+            >
+              <IconifyIcon icon="ant-design:profile-outlined" />
+              试运行结果
             </Button>
 
             <!-- ONLINE：下线 -->

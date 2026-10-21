@@ -51,6 +51,16 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        name: 'RuleRecord',
+        path: 'record',
+        component: () => import('#/views/rule/record/index.vue'),
+        meta: {
+          icon: 'lucide:list-checks',
+          keepAlive: true,
+          title: '筛查记录',
+        },
+      },
+      {
         name: 'Field',
         path: 'field',
         component: () => import('#/views/rule/field/index.vue'),

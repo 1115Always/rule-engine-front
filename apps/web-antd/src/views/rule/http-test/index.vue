@@ -58,8 +58,8 @@ const nowForTradeTime = () => {
 // 常用 URL 模板（含示例数据）
 const urlTemplates: UrlTemplate[] = [
   {
-    label: '规则匹配',
-    value: '/rule/match',
+    label: '规则筛查',
+    value: '/rule/screen',
     method: 'POST',
     body: {
       serialNo: 'TXN_20260416_001',
@@ -79,7 +79,7 @@ const urlTemplates: UrlTemplate[] = [
   },
   {
     label: '跨行转账',
-    value: '/rule/match',
+    value: '/rule/screen',
     method: 'POST',
     body: {
       serialNo: 'TXN_20260416_002',
@@ -99,7 +99,7 @@ const urlTemplates: UrlTemplate[] = [
   },
   {
     label: '快捷支付',
-    value: '/rule/match',
+    value: '/rule/screen',
     method: 'POST',
     body: {
       serialNo: 'TXN_20260416_003',
@@ -121,7 +121,7 @@ const urlTemplates: UrlTemplate[] = [
   },
   {
     label: '跨境汇出',
-    value: '/rule/match',
+    value: '/rule/screen',
     method: 'POST',
     body: {
       serialNo: 'TXN_20260416_004',
@@ -304,9 +304,9 @@ const getMethodColor = () => {
   return methodColorMap[method.value] || 'default';
 };
 
-// 默认选中"规则匹配"模板
+// 默认选中"规则筛查"模板
 onMounted(() => {
-  const matchTemplate = urlTemplates.find((t) => t.label === '规则匹配');
+  const matchTemplate = urlTemplates.find((t) => t.label === '规则筛查');
   if (matchTemplate) {
     applyTemplate(matchTemplate);
   }

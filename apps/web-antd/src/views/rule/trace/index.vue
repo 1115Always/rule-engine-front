@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
 import { Button, Card, Col, Descriptions, DescriptionsItem, Input, message, Row, Select, Space, Spin, Table, Tag } from 'ant-design-vue';
 
 import { getRulePackagesApi } from '#/api/rule/rule-package';
 import { getRulesByPackageApi, traceRuleApi } from '#/api/rule/rule';
 
+const route = useRoute();
+
 // 查询参数
-const transactionId = ref('');
+// 流水号可从路由带上：筛查记录列表点「回溯」跳转过来时带 serialNo
+const transactionId = ref((route.query.serialNo as string) || '');
 const selectedPackageId = ref<string | undefined>(undefined);
 const selectedRuleId = ref<string | undefined>(undefined);
 const loading = ref(false);
@@ -177,7 +181,7 @@ onMounted(() => {
             <span class="text-nowrap">流水号:</span>
             <Input
               v-model:value="transactionId"
-              placeholder="请输入match接口流水号"
+              placeholder="请输入筛查接口流水号"
               allow-clear
             />
           </div>

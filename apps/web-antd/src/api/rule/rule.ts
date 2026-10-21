@@ -122,7 +122,7 @@ export async function getRulesByPackageApi(packageId: number | string) {
 
 /**
  * 规则回溯接口（单个规则）
- * @param transactionId match接口的流水号
+ * @param transactionId 筛查接口的流水号
  * @param ruleId 需要回溯的规则ID
  */
 export async function traceRuleApi(params: { transactionId: string; ruleId: number }) {
