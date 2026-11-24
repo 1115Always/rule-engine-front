@@ -2,7 +2,6 @@
 import type { NotificationItem } from '@vben/layouts';
 
 import { computed, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
 
 import { AuthenticationLoginExpiredModal } from '@vben/common-ui';
 import { useWatermark } from '@vben/hooks';
@@ -56,7 +55,6 @@ const notifications = ref<NotificationItem[]>([
   },
 ]);
 
-const router = useRouter();
 const userStore = useUserStore();
 const authStore = useAuthStore();
 const accessStore = useAccessStore();
@@ -66,13 +64,6 @@ const showDot = computed(() =>
 );
 
 const menus = computed(() => [
-  {
-    handler: () => {
-      router.push({ name: 'Profile' });
-    },
-    icon: 'lucide:user',
-    text: $t('page.auth.profile'),
-  },
   {
     handler: () => {
       // 打开帮助文档

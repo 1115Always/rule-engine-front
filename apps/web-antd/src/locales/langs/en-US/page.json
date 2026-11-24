@@ -1,7 +1,6 @@
 {
   "auth": {
-    "login": "Login",
-    "profile": "Profile"
+    "login": "Login"
   },
   "login": {
     "headline": "Rules as Code",

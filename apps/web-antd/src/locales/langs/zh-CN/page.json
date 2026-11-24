@@ -1,7 +1,6 @@
 {
   "auth": {
-    "login": "登录",
-    "profile": "个人中心"
+    "login": "登录"
   },
   "login": {
     "headline": "规则即代码",
