@@ -10,8 +10,23 @@ packages:
   - packages/business/*
   - apps/*
   - scripts/*
-  - docs
-  - playground
+
+overrides:
+  '@ast-grep/napi': 'catalog:'
+  '@ctrl/tinycolor': 'catalog:'
+  browserslist: ^4.29.6
+  clsx: 'catalog:'
+  esbuild: 0.25.3
+  jiti: 'catalog:'
+  pinia: 'catalog:'
+  vue: 'catalog:'
+
+# pnpm 10 起这些配置只从本文件读（package.json 的 pnpm 字段已失效）
+onlyBuiltDependencies:
+  - less
+ignoredBuiltDependencies:
+  - canvas
+  - node-gyp
 
 catalog:
   '@ast-grep/napi': ^0.39.9
