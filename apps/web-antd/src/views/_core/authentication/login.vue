@@ -1,9 +1,7 @@
 <script lang="ts" setup>
 import type { VbenFormSchema } from '@vben/common-ui';
 
-import { markRaw } from 'vue';
-
-import { AuthenticationLogin, SliderCaptcha, z } from '@vben/common-ui';
+import { AuthenticationLogin, z } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 
 import { useAuthStore } from '#/store';
@@ -16,6 +14,7 @@ const formSchema: VbenFormSchema[] = [
   {
     component: 'VbenInput',
     componentProps: {
+      class: 'bg-foreground/5 text-foreground h-11 rounded-xl',
       placeholder: $t('authentication.usernameTip'),
     },
     fieldName: 'username',
@@ -25,18 +24,12 @@ const formSchema: VbenFormSchema[] = [
   {
     component: 'VbenInputPassword',
     componentProps: {
+      class: 'bg-foreground/5 text-foreground h-11 rounded-xl',
       placeholder: $t('authentication.password'),
     },
     fieldName: 'password',
     label: $t('authentication.password'),
     rules: z.string().min(1, { message: $t('authentication.passwordTip') }),
-  },
-  {
-    component: markRaw(SliderCaptcha),
-    fieldName: 'captcha',
-    rules: z.boolean().refine((value) => value, {
-      message: $t('authentication.verifyRequiredTip'),
-    }),
   },
 ];
 </script>
@@ -45,6 +38,12 @@ const formSchema: VbenFormSchema[] = [
   <AuthenticationLogin
     :form-schema="formSchema"
     :loading="authStore.loginLoading"
+    :show-code-login="false"
+    :show-forget-password="false"
+    :show-qrcode-login="false"
+    :show-register="false"
+    :show-remember-me="false"
+    :show-third-party-login="false"
     @submit="authStore.authLogin"
   />
 </template>

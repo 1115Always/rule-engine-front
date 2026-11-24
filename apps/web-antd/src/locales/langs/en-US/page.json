@@ -1,10 +1,17 @@
 {
   "auth": {
     "login": "Login",
-    "register": "Register",
-    "codeLogin": "Code Login",
-    "qrcodeLogin": "Qr Code Login",
-    "forgetPassword": "Forget Password",
     "profile": "Profile"
+  },
+  "login": {
+    "headline": "Rules as Code",
+    "headlineAccent": "Decisions explained, changes reversible",
+    "subheadline": "Real-time decisions · Millisecond latency · Fully traceable",
+    "feature1Desc": "Compose rule sets visually, business and engineering in one place",
+    "feature1Title": "Visual rule authoring",
+    "feature2Desc": "Version diff and shadow-traffic validation, ship without risk",
+    "feature2Title": "Canary release & instant rollback",
+    "feature3Desc": "Every hit traces back to its rule details and execution snapshot",
+    "feature3Title": "End-to-end decision audit"
   }
 }

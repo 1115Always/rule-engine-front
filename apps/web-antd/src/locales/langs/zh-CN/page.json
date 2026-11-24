@@ -1,10 +1,17 @@
 {
   "auth": {
     "login": "登录",
-    "register": "注册",
-    "codeLogin": "验证码登录",
-    "qrcodeLogin": "二维码登录",
-    "forgetPassword": "忘记密码",
     "profile": "个人中心"
+  },
+  "login": {
+    "headline": "规则即代码",
+    "headlineAccent": "决策可解释 · 变更可回溯",
+    "subheadline": "实时决策 · 毫秒级响应 · 全链路可追溯",
+    "feature1Desc": "拖拽式配置规则集，业务与研发同屏协作",
+    "feature1Title": "可视化规则编排",
+    "feature2Desc": "版本对比与影子流量验证，变更零风险",
+    "feature2Title": "灰度发布与秒级回滚",
+    "feature3Desc": "每次命中可追溯规则明细与执行快照",
+    "feature3Title": "全链路决策审计"
   }
 }
