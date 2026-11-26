@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { Button, Card, Col, Descriptions, DescriptionsItem, Input, message, Row, Select, Space, Spin, Table, Tag } from 'ant-design-vue';
@@ -24,7 +24,6 @@ const ruleLoading = ref(false);
 
 // 回溯结果
 const traceResult = ref<any>(null);
-const originalFact = ref<Record<string, any>>({});
 const mergedFact = ref<Record<string, Object>>({});
 
 // 条件表格列定义
@@ -61,30 +60,6 @@ const conditionColumns = [
   },
 ];
 
-// Fact差异（合并后新增的字段）
-computed(() => {
-  const original = originalFact.value || {};
-  const merged = mergedFact.value || {};
-  const diff: { key: string; original: any; merged: any; isNew: boolean }[] = [];
-
-  const allKeys = new Set([...Object.keys(original), ...Object.keys(merged)]);
-  allKeys.forEach((key) => {
-    const originalValue = original[key];
-    const mergedValue = merged[key];
-    const isNew = !(key in original);
-
-    if (isNew || JSON.stringify(originalValue) !== JSON.stringify(mergedValue)) {
-      diff.push({
-        key,
-        original: originalValue,
-        merged: mergedValue,
-        isNew,
-      });
-    }
-  });
-
-  return diff;
-});
 // 加载规则包列表
 const loadPackageList = async () => {
   packageLoading.value = true;
@@ -134,7 +109,7 @@ const handleTrace = async () => {
   traceResult.value = null;
 
   try {
-    // 响应格式: { originalFact, mergedFact, traceResult }
+    // 响应格式: { mergedFact, traceResult }
     const response = await traceRuleApi({
       transactionId: transactionId.value.trim(),
       ruleId: Number(selectedRuleId.value),
@@ -142,7 +117,6 @@ const handleTrace = async () => {
 
     if (response) {
       traceResult.value = response.traceResult;
-      originalFact.value = response.originalFact || {};
       mergedFact.value = response.mergedFact || {};
       message.success('回溯成功');
     } else {
@@ -161,7 +135,6 @@ const handleClear = () => {
   selectedPackageId.value = undefined;
   selectedRuleId.value = undefined;
   traceResult.value = null;
-  originalFact.value = {};
   mergedFact.value = {};
 };
 
@@ -227,39 +200,17 @@ onMounted(() => {
     <!-- 回溯结果 -->
     <Spin :spinning="loading">
       <template v-if="traceResult">
-        <!-- Fact数据展示 -->
+        <!-- Fact数据展示（mergedFact 即求值输入叠加了本次函数调用结果后的视图） -->
         <Card title="Fact数据" size="small" class="mb-4">
-          <Row :gutter="16">
-            <Col :span="12">
-              <Card size="small" title="原始Fact" class="h-full">
-                <Descriptions :column="1" size="small">
-                  <DescriptionsItem
-                    v-for="(value, key) in originalFact"
-                    :key="key"
-                    :label="String(key)"
-                  >
-                    {{ JSON.stringify(value) }}
-                  </DescriptionsItem>
-                </Descriptions>
-              </Card>
-            </Col>
-            <Col :span="12">
-              <Card size="small" title="合并后Fact（含函数调用结果）" class="h-full">
-                <Descriptions :column="1" size="small">
-                  <DescriptionsItem
-                    v-for="(value, key) in mergedFact"
-                    :key="key"
-                    :label="String(key)"
-                  >
-                    <Space>
-                      {{ JSON.stringify(value) }}
-                      <Tag v-if="!(key in originalFact)" color="green">新增</Tag>
-                    </Space>
-                  </DescriptionsItem>
-                </Descriptions>
-              </Card>
-            </Col>
-          </Row>
+          <Descriptions :column="1" size="small">
+            <DescriptionsItem
+              v-for="(value, key) in mergedFact"
+              :key="key"
+              :label="String(key)"
+            >
+              {{ JSON.stringify(value) }}
+            </DescriptionsItem>
+          </Descriptions>
         </Card>
 
         <!-- 条件评估结果 -->
