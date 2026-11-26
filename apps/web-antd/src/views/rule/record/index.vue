@@ -224,6 +224,9 @@ defineExpose({
                   color="blue"
                 >
                   #{{ hit.ruleId }} {{ hit.ruleName }}
+                  <span v-if="hit.rulePackageName" class="opacity-60">
+                    · {{ hit.rulePackageName }}
+                  </span>
                 </Tag>
               </Space>
             </template>
