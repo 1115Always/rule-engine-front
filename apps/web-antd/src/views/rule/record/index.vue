@@ -1,10 +1,21 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { formatDateTime } from '@vben/utils';
 
-import { Button, Card, Input, Select, Space, Table, Tag } from 'ant-design-vue';
+import {
+  Button,
+  Card,
+  Descriptions,
+  DescriptionsItem,
+  Input,
+  Modal,
+  Select,
+  Space,
+  Table,
+  Tag,
+} from 'ant-design-vue';
 
 import { getRuleRecordsApi } from '#/api/rule/record';
 import { getSceneOptionsApi } from '#/api/rule/scene';
@@ -43,10 +54,10 @@ const columns = [
     width: 100,
   },
   {
-    title: '命中规则',
+    title: '是否命中规则',
     dataIndex: 'matchedRules',
     key: 'matchedRules',
-    width: 300,
+    width: 120,
   },
   {
     title: '事件时间',
@@ -63,7 +74,19 @@ const columns = [
   {
     title: '操作',
     key: 'action',
-    width: 100,
+    width: 140,
+  },
+];
+
+// 详情弹窗里的命中规则列表：规则编号/名称/所属规则包
+const hitColumns = [
+  { title: '规则编号', dataIndex: 'ruleId', key: 'ruleId', width: 100 },
+  { title: '规则名称', dataIndex: 'ruleName', key: 'ruleName' },
+  {
+    title: '所属规则包',
+    dataIndex: 'rulePackageName',
+    key: 'rulePackageName',
+    width: 180,
   },
 ];
 
@@ -129,6 +152,15 @@ const handleReset = () => {
   };
   pagination.value.current = 1;
   loadData();
+};
+
+// 详情弹窗：列表行数据已含全部展示字段，直接复用，不再单查
+const detailOpen = ref(false);
+const detail = ref<any>(null);
+
+const handleDetail = (record: any) => {
+  detail.value = record;
+  detailOpen.value = true;
 };
 
 // 跳转到规则回溯页并带上流水号：回溯要选具体规则，故不在本页直接发起
@@ -216,21 +248,10 @@ defineExpose({
             </Tag>
           </template>
           <template v-else-if="column.key === 'matchedRules'">
-            <template v-if="record.matchedRules?.length">
-              <Space wrap>
-                <Tag
-                  v-for="hit in record.matchedRules"
-                  :key="hit.ruleId"
-                  color="blue"
-                >
-                  #{{ hit.ruleId }} {{ hit.ruleName }}
-                  <span v-if="hit.rulePackageName" class="opacity-60">
-                    · {{ hit.rulePackageName }}
-                  </span>
-                </Tag>
-              </Space>
-            </template>
-            <span v-else class="text-gray-400">未命中</span>
+            <Tag v-if="record.matchedRules?.length" color="success">
+              命中 {{ record.matchedRules.length }}
+            </Tag>
+            <Tag v-else>未命中</Tag>
           </template>
           <template v-else-if="column.key === 'eventTime'">
             {{ record.eventTime ? formatDateTime(record.eventTime) : '-' }}
@@ -239,13 +260,70 @@ defineExpose({
             {{ record.createdAt ? formatDateTime(record.createdAt) : '-' }}
           </template>
           <template v-else-if="column.key === 'action'">
-            <Button type="link" size="small" @click="handleTrace(record)">
-              回溯
-            </Button>
+            <Space :size="4">
+              <Button type="link" size="small" @click="handleDetail(record)">
+                详情
+              </Button>
+              <Button type="link" size="small" @click="handleTrace(record)">
+                回溯
+              </Button>
+            </Space>
           </template>
         </template>
       </Table>
     </Card>
+
+    <Modal
+      v-model:open="detailOpen"
+      :footer="null"
+      title="流水详情"
+      width="760px"
+    >
+      <template v-if="detail">
+        <Descriptions :column="2" bordered size="small">
+          <DescriptionsItem label="流水号">
+            {{ detail.serialNo }}
+          </DescriptionsItem>
+          <DescriptionsItem label="场景">
+            {{ detail.sceneCode }}
+          </DescriptionsItem>
+          <DescriptionsItem label="类型">
+            <Tag :color="getStatusMeta(detail.ruleStatus).color">
+              {{ getStatusMeta(detail.ruleStatus).label }}
+            </Tag>
+          </DescriptionsItem>
+          <DescriptionsItem label="是否命中">
+            <Tag v-if="detail.matchedRules?.length" color="success">
+              命中 {{ detail.matchedRules.length }}
+            </Tag>
+            <Tag v-else>未命中</Tag>
+          </DescriptionsItem>
+          <DescriptionsItem label="事件时间">
+            {{ detail.eventTime ? formatDateTime(detail.eventTime) : '-' }}
+          </DescriptionsItem>
+          <DescriptionsItem label="记录时间">
+            {{ detail.createdAt ? formatDateTime(detail.createdAt) : '-' }}
+          </DescriptionsItem>
+        </Descriptions>
+
+        <div class="mt-4 mb-2 text-sm font-medium">命中规则</div>
+        <Table
+          :columns="hitColumns"
+          :data-source="detail.matchedRules"
+          :locale="{ emptyText: '本次筛查未命中任何规则' }"
+          :pagination="false"
+          row-key="ruleId"
+          size="small"
+        >
+          <template #bodyCell="{ column, record: hit }">
+            <template v-if="column.key === 'ruleId'">#{{ hit.ruleId }}</template>
+            <template v-else-if="column.key === 'rulePackageName'">
+              {{ hit.rulePackageName || '-' }}
+            </template>
+          </template>
+        </Table>
+      </template>
+    </Modal>
   </div>
 </template>
 

@@ -23,6 +23,8 @@ export interface RuleRecordHit {
   /** 大整数ID，使用字符串类型避免精度丢失 */
   ruleId: string;
   ruleName: string;
+  /** 命中时该规则所属的规则包名 */
+  rulePackageName?: string;
 }
 
 /** 筛查记录列表项 */
