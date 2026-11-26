@@ -1,7 +1,6 @@
 import type { RouteRecordRaw } from 'vue-router';
 
 import { LOGIN_PATH } from '@vben/constants';
-import { preferences } from '@vben/preferences';
 
 import { $t } from '#/locales';
 
@@ -25,7 +24,7 @@ const coreRoutes: RouteRecordRaw[] = [
   /**
    * 根路由
    * 使用基础布局，作为所有页面的父级容器，子级就不必配置BasicLayout。
-   * 此路由必须存在，且不应修改
+   * 此路由必须存在。
    */
   {
     component: BasicLayout,
@@ -35,7 +34,8 @@ const coreRoutes: RouteRecordRaw[] = [
     },
     name: 'Root',
     path: '/',
-    redirect: preferences.app.defaultHomePath,
+    // 首页直接落到登录页：未登录时不会先进 /dashboard 再触发一次鉴权请求
+    redirect: LOGIN_PATH,
     children: [],
   },
   {
